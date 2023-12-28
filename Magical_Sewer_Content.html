@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html lang = "pt-br">
+	<head>
+		<meta charset="utf-8">
+		<meta name = "viewport" content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+		<title> Magical Sewer </title>
+		<link rel = "icon" type = "image/x-icon" href = "Icones/magical_sewer_icon_.png">
+	</head>
+	<body onload = "GameBonanza()" >
+		<canvas class = "gameScreen" id= "cenario" width="520" height = "520"></canvas>
+		<canvas class= "gameScreen" id = "personagens" width="520" height="520"></canvas>
+		<canvas class = "gamescreen" id = "transicoes" witdth = "520" height = "520"></canvas>
+		<canvas class = "gameScreen" id="HUD" width="520" height="520"></canvas>
+		<canvas id="controles_cheroso" width="962" height="520"></canvas>
+		<!--gráficos-->
+		<div class = "alerta">
+				impossivel usar o modo retrato.
+		</div>
+	</body>
+	
+	<style>
+		@font-face{
+			font-family: "classicalComic";
+			src: local("ClassicComic"), local("classic comic w01 regular"),
+			url("Letras/ClassicComicRegular.ttf") format('truetype');
+		}
+		@media only screen and (orientation: landscape){
+			#controles_cheroso {
+				position: absolute;
+				z-index: 5;
+				width: 100vw; /* Cobrir a largura da tela */
+				height: 100vh; /* Cobrir a altura da tela */
+			}
+			body {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin: 0;
+				
+				background-color: #00004f;
+			}
+	
+			.gameScreen {
+				position: absolute;
+				aspect-ratio: 1/1;
+			}
+	
+			#personagens {
+				
+				z-index: 2;
+			}
+	
+			#transicoes {
+				
+				z-index: 3;
+			}
+	
+			#HUD {
+				z-index: 4;
+			}
+			.alerta{
+				display: none;
+			}
+			#error{
+				display: none;
+			}
+		}
+		@media only screen and (orientation: portrait){
+			#controles_cheroso {
+				display: none;
+			}
+			.gameScreen{
+				display: none;
+			}
+			body{
+				background-color: #4A0000;
+				background-image: url("imagens/UI/error_screen.png");
+				background-repeat:no-repeat;
+				background-position: center;
+			}
+			.alerta{
+				width:75%;
+				height: 80%;
+				margin: 10%;
+				display: flex;
+				text-shadow: 3px 3px 5px #000;
+				box-shadow: 3px 3px 5px #000;
+				color: #EBD68B;
+				border: 5px dashed #EBD68B;
+				border-radius: 25px;
+				text-shadow: 7px #000;
+				backdrop-filter:blur(5px);
+				text-align: center;
+				justify-content: center;
+				align-items:center;
+				font-size: 30px;
+				z-index: 1;
+				font-family: "classicalComic";
+			}
+		}
+	</style>
+	<script src = "controls_mg_sew.js"></script>
+	<script src = "maps_mgSew.js"></script>
+	<script src = "Char.js"></script>
+	<script src = "UI.js"></script>
+	<script src = "backgrounds.js"></script>
+	<script src = "cenery.js"></script>
+	<script src = "dialogs.js"></script>
+	<script src = "Kill_myself.js"></script>
+</html>
