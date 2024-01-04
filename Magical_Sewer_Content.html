@@ -25,6 +25,14 @@
 			src: local("ClassicComic"), local("classic comic w01 regular"),
 			url("Letras/ClassicComicRegular.ttf") format('truetype');
 		}
+		@keyframes pattern01Move{
+			from{
+				background-position: 0px 0px;
+			}
+			to{
+				background-position: 400px 400px;
+			}
+		}
 		@media only screen and (orientation: landscape){
 			#controles_cheroso {
 				position: absolute;
@@ -75,9 +83,10 @@
 			}
 			body{
 				background-color: #4A0000;
-				background-image: url("imagens/UI/error_screen.png");
-				background-repeat:no-repeat;
+				background-image: url("imagens/UI/castWarn.png");
 				background-position: center;
+				baclground-size: cover;
+				animation: pattern01Move 10s linear infinite;
 			}
 			.alerta{
 				width:75%;
