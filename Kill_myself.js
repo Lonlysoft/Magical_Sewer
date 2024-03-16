@@ -1,7 +1,5 @@
 //esse é o código do mágical sewer
 
-//tela do jogo
-
 //coisas pra config.
 var frame = 0
 var frameaux = 0
@@ -31,21 +29,6 @@ function assemblyCharacter(personagemID){
 var graviter = 0;
 var fazendoSav = "still";
 
-function gravidadePrincipal(){
-	if(k > 0){
-		k--;
-		if(k%2 == 1){
-			personagemAtual.pontoCentral[1] += vaisefude;
-		}
-		personagemAtual.ser.WorldPos.y -= personagemAtual.ser.JMAX;
-	}
-	else{
-		personagemAtual.ser.fazendo = 'still';
-	}
-}
-
-
-
 const cursor = {
 	x: undefined,
 	y: undefined,
@@ -64,25 +47,8 @@ cursor.graphic.src = "Imagens/UI/Guaxo cursor.png"
 
 var guaxo_sta_process = 0
 
-
-/*
-var pause_options = {
-	falar: [posicaoX+largura/2, posicaoY - 10, 6, 6],
-	item: [posicaoX-10, posicaoY+alturaAtual/2, 6, 6],
-	checar: [posicaoX+largura+10, posicaoY+alturaAtual/2, 6, 6],
-	info: [posicaoX+largura/2, posicaoY+alturaAtual+10, 6, 6 ],
-	generalW: 12,
-	generalH: 12,
-	grafico: new Image()
-}
-pause_options.grafico.src = "imagens/HUD/pur_ball.png"
-*/
-//saving issues
-var GameMoment = 1 //são o codigo salas do game, cada um tem um.
-var GameMoment_Sav = 0
-
 //acoes qnd o negocio e apertado
-var demandarTransicao = false
+var demandarTransicao = true
 var CentroDaTela = [canvas.width/2, canvas.height/2]
 
 //limpar a tela
@@ -109,18 +75,6 @@ function TelaTitulo(){
 	}
 }
 
-
-
-//tela de selecao de personagem
-const icons = {
-	guaxo: [new Image(), new Image()],
-	raty: [new Image(), new Image()],
-	dante: [new Image(), new Image()]
-}
-icons.guaxo[0].src = "imagens/Personagens/GuaxoIcone01.png";
-icons.guaxo[1].src = "imagens/Personagens/GuaxoIcone02.png";
-
-
 /*---- M A I N ----*/
 const fps = 33
 function GameBonanza(){
@@ -140,57 +94,129 @@ function falseUpTheSituations(){
 
 var interac1 = 0;
 var interac2 = 0;
+var timeout = 0;
+var scrnAppear = false
 
+
+//saving issues
+var GameMoment = 2 //são o codigo salas do game, cada um tem um.
+var GameMoment_Sav = 0
 // modular o frame
 function GamePlay(){
-	
-	limpar(ctx)
-	limpar(controls_ctx)
-	limpar(HUD_ctx)
-	limpar(ctx_BG)
-	limpar(ctx_Tr)
+	limpar(ctx);
+	limpar(controls_ctx);
+	limpar(HUD_ctx);
+	limpar(ctx_BG);
+	limpar(ctx_Tr);
 	switch (GameMoment){
-		case 1: TelaTitulo()
+		case -3:
+			if(demandarTransicao == true && scrnAppear == false){
+				transicaoDeTela("vindo");
+				if(alfa <= 0){
+					demandarTransicao = false;
+					scrnAppear = true
+				}
+			}
+			
+			LOGOTYPE("Vynny");
+			
+			timeout++;
+			
+			if(timeout > 50){
+				demandarTransicao = true;
+			}
+			if(demandarTransicao == true && scrnAppear){
+				transicaoDeTela("indo");
+				timeout = 0;
+				if(alfa >= 1){
+					alfa = 1;
+					GameMomentSav = 0;
+					GameMoment++;
+					scrnAppear = false
+				}
+			}
+			break;
+		case -2:
+			if(demandarTransicao == true && scrnAppear == false){
+				transicaoDeTela("vindo");
+				if(alfa <= 0){
+					demandarTransicao = false;
+					scrnAppear = true
+				}
+			}
+			
+			LOGOTYPE("LONLYSOFT");
+			
+			timeout++;
+			
+			if(timeout > 50){
+				demandarTransicao = true;
+			}
+			if(demandarTransicao == true && scrnAppear){
+				transicaoDeTela("indo");
+				timeout = 0;
+				if(alfa >= 1){
+					alfa = 1;
+					GameMomentSav = 0;
+					GameMoment++;
+					scrnAppear = false
+				}
+			}
+			break;
+			
+		case 1: if(demandarTransicao == true && scrnAppear == false){
+					transicaoDeTela("vindo");
+					if(alfa <= 0){
+						demandarTransicao = false;
+						scrnAppear = true
+					}
+				}
+				TelaTitulo()
 				esconder_HUD()
 				EventoDeToq()
 				desenharBotoes(Controule.Botoeses)
 				//adicionar musica
-				action("menu", "start");
-				//escreva("BGVCV", 25, canvas.height - 40, 9)
-				if(demandarTransicao == true){
+				action("start");
+				escreva("Lonlysoft 2024", 25, canvas.height - 40);
+				if(demandarTransicao == true && scrnAppear){
 					transicaoDeTela("indo");
 					if(alfa >= 1){
 						alfa = 1;
 						GameMomentSav = 2;
 						GameMoment = 2;
+						scrnAppear = false
 					}
 				}
-			break
+			break;
+			
+		case 9998:
+			//tela de GameOver
+			GameOverScreen();
+			action("end");
+			break;
 			
 		case 9999:
+			cursor.max = PauseMenu.numDeOpcoes;
 			//menu de pausa
 			//drawCenery(mapaAtual.nome)
-			personagemAtual.desenhar(0, 0);
-			HUD_ctx.drawImage(caixa_de_texto.graph, caixa_de_texto.posicao[0],
-caixa_de_texto.posicao[1], caixa_de_texto.posicao[2], caixa_de_texto.posicao[3]);
+			personagemAtual.desenhar();
+			
+			HUD_ctx.fillStyle = "#000"
 			HUD_ctx.globalAlpha = 0.5;
 			HUD_ctx.fillRect(0, 0, 520, 520);
 			HUD_ctx.globalAlpha = 1;
 			
-			Pause();
+			PauseMenu.draw(canvas.width/2, canvas.height/2);
 			EventoDeToq();
-			cursor.desenhar(caixa_de_texto.posicao[0] + interac1, caixa_de_texto.posicao[1] - 10 + interac2);
 			desenharBotoes(Controule.Botoeses);
-			action("UI", "pause");
+			action("pause");
 			controlState_save();
 			if(gameFeature.pause == false){
 				GameMoment = GameMomentSav;
 			}
 			break;
 			
-			
 		case 2:
-			mover = true;
 			//o jogo principal
 			if(gameFeature.pause == true){
 				GameMomentSav = GameMoment;
@@ -215,31 +241,20 @@ caixa_de_texto.posicao[1], caixa_de_texto.posicao[2], caixa_de_texto.posicao[3])
 					demandarTransicao = false;
 				}
 			}
-			action("sala", "personagem");
+			action("personagem");
+			personagemAtual.ser.colisionar();
 			controlState_save();
-			personagemAtual.ser.declairCoords();
 			Camera.moverPara(personagemAtual.ser.WorldPos.x, personagemAtual.ser.WorldPos.z);
-			if(personagemAtual.ser.WorldPos.y > mapaAtual.relevoGrid[personagemAtual.ser.inGrid.y*mapaAtual.largura + personagemAtual.ser.inGrid.x]){
-				if(personagemAtual.pontoCentral <= (canvas.width/3)*2){
-					personagemAtual.pontoCentral[1] += 10;
-				}
-				else{
-					
-				}
+			if(personagemAtual.ser.pulando){
+				personagemAtual.ser.pular();
 			}
-			if(personagemAtual.ser.WorldPos.y == mapaAtual.relevoGrid[personagemAtual.ser.inGrid.z*mapaAtual.largura + personagemAtual.ser.inGrid.x]){
-				personagemAtual.ser.pulando = false;
+			if(personagemAtual.ser.noChao() == false){
+				personagemAtual.ser.cair();
 			}
 			renderHUD();
-			
-			escreva("x " + personagemAtual.ser.currentCol[0] + "", 45, 165);
-			escreva("z " + personagemAtual.ser.currentCol[1] + "", 45, 185);
-			escreva("mov " + mover + "", 45, 205);
-			escreva("x " + personagemAtual.ser.WorldPos.x + "", 45, 225);
-			escreva("z " + personagemAtual.ser.WorldPos.z + "", 45, 245);
-			escreva("direcao "+ personagemAtual.ser.direcao + "", 45, 265);
-			fale("v: "+ personagemAtual.ser.velocity + "", 45, 305);
-			
+			escreva("fznd "+ personagemAtual.ser.fazendo + "", 45, 265);
+			escreva("nochao "+ personagemAtual.ser.noChao() + "", 45, 285);
+			escreva("Y: "+personagemAtual.ser.WorldPos.y, 45, 185);
 			break;
 			
 		case 3:
@@ -256,14 +271,14 @@ caixa_de_texto.posicao[1], caixa_de_texto.posicao[2], caixa_de_texto.posicao[3])
 				}
 			}
 			break;
-			action("charSLCT", "SLCT");
+			action("SLCT", "vert", 3);
 		default:
 			GameMoment = 1
 			break
 	}
 	if(frame >= 30){
 		frame = 0
-		if(frameaux >= 100){
+		if(frameaux >= 180){
 			frameaux = 0
 		}
 		else {
