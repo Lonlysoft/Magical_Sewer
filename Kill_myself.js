@@ -43,7 +43,7 @@ const cursor = {
 	},
 	max: 4
 }
-cursor.graphic.src = "Imagens/UI/Guaxo cursor.png"
+cursor.graphic.src = "Imagens/Guaxo cursor.png"
 
 var guaxo_sta_process = 0
 
@@ -111,7 +111,7 @@ function GamePlay(){
 	switch (GameMoment){
 		case -3:
 			if(demandarTransicao == true && scrnAppear == false){
-				transicaoDeTela("vindo");
+				transicaoDeTela("vindo", 0.1);
 				if(alfa <= 0){
 					demandarTransicao = false;
 					scrnAppear = true
@@ -126,7 +126,7 @@ function GamePlay(){
 				demandarTransicao = true;
 			}
 			if(demandarTransicao == true && scrnAppear){
-				transicaoDeTela("indo");
+				transicaoDeTela("indo", 0.1);
 				timeout = 0;
 				if(alfa >= 1){
 					alfa = 1;
@@ -138,7 +138,7 @@ function GamePlay(){
 			break;
 		case -2:
 			if(demandarTransicao == true && scrnAppear == false){
-				transicaoDeTela("vindo");
+				transicaoDeTela("vindo", 0.1);
 				if(alfa <= 0){
 					demandarTransicao = false;
 					scrnAppear = true
@@ -153,7 +153,7 @@ function GamePlay(){
 				demandarTransicao = true;
 			}
 			if(demandarTransicao == true && scrnAppear){
-				transicaoDeTela("indo");
+				transicaoDeTela("indo", 0.1);
 				timeout = 0;
 				if(alfa >= 1){
 					alfa = 1;
@@ -165,7 +165,7 @@ function GamePlay(){
 			break;
 			
 		case 1: if(demandarTransicao == true && scrnAppear == false){
-					transicaoDeTela("vindo");
+					transicaoDeTela("vindo", 0.1);
 					if(alfa <= 0){
 						demandarTransicao = false;
 						scrnAppear = true
@@ -199,7 +199,7 @@ function GamePlay(){
 			cursor.max = PauseMenu.numDeOpcoes;
 			//menu de pausa
 			//drawCenery(mapaAtual.nome)
-			personagemAtual.desenhar();
+			scenery.desenhar()
 			
 			HUD_ctx.fillStyle = "#000"
 			HUD_ctx.globalAlpha = 0.5;
@@ -222,9 +222,9 @@ function GamePlay(){
 				GameMomentSav = GameMoment;
 				GameMoment = 9999;
 			}
-			assemblyCharacter(Guaxo.ID);
 			if(scenery.hasDeclaired == false){
 				scenery.declair("ftest");
+				assemblyCharacter(Guaxo.ID);
 			}
 			/*
 			if(personagemAtual.ser.onSpawn == false && scenery.hasDeclaired == true){
@@ -236,26 +236,23 @@ function GamePlay(){
 			EventoDeToq();
 			desenharBotoes(Controule.Botoeses);
 			if(demandarTransicao == true){
-				transicaoDeTela("vindo");
+				transicaoDeTela("vindo", 0.1);
 				if(alfa <= 0){
 					demandarTransicao = false;
 				}
 			}
 			action("personagem");
-			personagemAtual.ser.colisionar();
+			colisionar(personagemAtual);
 			controlState_save();
 			Camera.moverPara(personagemAtual.ser.WorldPos.x, personagemAtual.ser.WorldPos.z);
-			if(personagemAtual.ser.pulando){
-				personagemAtual.ser.pular();
-			}
-			if(personagemAtual.ser.noChao() == false){
-				personagemAtual.ser.cair();
-			}
-			renderHUD();
+			escreva("i "+ personagemAtual.ser.WorldPos.y > mapaAtual.limites[WorldToGrid(personagemAtual.ser.WorldPos.z, 60)][WorldToGrid(personagemAtual.ser.WorldPos.x, 60)].y + "", 45, 205);
+			handleYcoords(personagemAtual);
+			
+			//renderHUD();
 			escreva("fznd "+ personagemAtual.ser.fazendo + "", 45, 265);
-			escreva("nochao "+ personagemAtual.ser.noChao() + "", 45, 285);
 			escreva("Y: "+personagemAtual.ser.WorldPos.y, 45, 185);
-			break;
+			fale(""+personagemAtual.ser.Nome + "		hp:" + personagemAtual.ser.hp + "		score: " + personagemAtual.ser.xp+"", 30, 30);
+		break;
 			
 		case 3:
 			charSelectionScreen();
@@ -267,7 +264,7 @@ function GamePlay(){
 					demandarTransicao = false;
 				}
 				else{
-					transicaoDeTela("vindo");
+					transicaoDeTela("vindo", 0.1);
 				}
 			}
 			break;
