@@ -5,116 +5,141 @@
 		<meta charset="utf-8">
 		<meta name = "viewport" content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 		<title> Magical Sewer </title>
-		<link rel = "icon" type = "image/x-icon" href = "Icones/magical_sewer_icon_.png">
+		<link rel = "icon" type = "image/x-icon" href = "src/favicon/magical_sewer_icon_.png">
+		<style>
+			@font-face{
+				font-family: "classicalComic";
+				src: local("ClassicComic"), local("classic comic w01 regular"),
+				url("src/Letras/ClassicComicRegular.ttf") format('truetype');
+			}
+			@font-face{
+				font-family: "dragonQuest";
+				src: local("dragon-quest-ds"), local("Dragon Quest (DS) Regular"),
+				url("src/Letras/dragon-quest-ds.ttf") format('truetype');
+			}
+			@font-face{
+				font-family: "kindSans";
+				src: local("Kind Sans Thin Regular"), local("Kind Sans Thin"), local("kindSans"), url("src/Letras/Kind_Sans_Thin.otf") format("opentype");
+			}
+			@keyframes pattern01Move{
+				from{
+					background-position: 0px 0px;
+				}
+				to{
+					background-position: 400px 400px;
+				}
+			}
+			@media only screen and (orientation: landscape){
+				#controles_cheroso {
+					position: absolute;
+					z-index: 5;
+					width: 100vw; /* Cobrir a largura da tela */
+					height: 100vh; /* Cobrir a altura da tela */
+				}
+				body {
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					margin: 0;
+					
+					background-color: #00004f;
+				}
+		
+				.gameScreen {
+					position: absolute;
+					aspect-ratio: 1/1;
+					width: 100vh;
+					height: 100vh;
+				}
+				
+				#personagens {
+					
+					z-index: 2;
+				}
+		
+				#transicoes {
+					
+					z-index: 3;
+				}
+		
+				#HUD {
+					z-index: 4;
+				}
+				.alerta{
+					display: none;
+				}
+				#error{
+					display: none;
+				}
+			}
+			@media only screen and (orientation: portrait){
+				#controles_cheroso {
+					display: none;
+				}
+				.gameScreen{
+					display: none;
+				}
+				body{
+					background-color: #00004A;
+					background-image: url("src/imagens/castWarn.png");
+					baclground-size: cover;
+					display: flex;
+					justify-content: center;
+					align-items: center;
+					animation: pattern01Move 10s linear infinite;
+					overflow: hidden;
+					width:100vw;
+					height: 100vh;
+				}
+				.alerta{
+					width: 80%;
+					height: 56%;
+					margin: 10%;
+					display: flex;
+					flex-direction: column;
+					/*text-shadow: 3px 3px 5px #000;*/
+					background: linear-gradient(135deg, #fff8 20%, #0046 80%);
+					box-shadow: 3px 3px 5px #000;
+					color: #fff;
+					border-top: 1px solid #fff;
+					border-left: 1px solid #fff;
+					border-radius: 25px;
+					backdrop-filter:blur(7px);
+					text-align: center;
+					justify-content: center;
+					align-items:center;
+					font-size: 30px;
+					z-index: 1;
+					font-family: "kindSans", sans-serif;
+					font-weight: 900;
+				}
+				.instrucao{
+					width:20vw;
+					height: 20vw;
+				}
+			}
+		</style>
 	</head>
 	<body onload = "GameBonanza()" >
-		<canvas class = "gameScreen" id= "cenario" width="520" height = "520"></canvas>
-		<canvas class= "gameScreen" id = "personagens" width="520" height="520"></canvas>
-		<canvas class = "gamescreen" id = "transicoes" witdth = "520" height = "520"></canvas>
-		<canvas class = "gameScreen" id="HUD" width="520" height="520"></canvas>
-		<canvas id="controles_cheroso" width="962" height="520"></canvas>
+		<canvas class = "gameScreen" id= "cenario"></canvas>
+		<canvas class= "gameScreen" id = "personagens"></canvas>
+		<canvas class = "gamescreen" id = "transicoes"></canvas>
+		<canvas class = "gameScreen" id="HUD"></canvas>
+		<canvas id="controles_cheroso"></canvas>
 		<!--gráficos-->
 		<div class = "alerta">
-				impossivel usar o modo retrato.
+				Impossivel usar o modo retrato!
+				<svg class = "instrucao" width="800px" height="800px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs><style>.a{fill:none;stroke:#fff;stroke-linecap:round;stroke-linejoin:round;}</style></defs><path class="a" d="M23.2711,2.5133A21.5,21.5,0,0,1,45.3607,21.38"/><path class="a" d="M24.3967,45.4967A21.5,21.5,0,0,1,2.6393,26.2472"/><path class="a" d="M19.0507,5.0567,42.7424,28.7882a.7225.7225,0,0,1-.029,1.0207L29.4983,43.0019a.7225.7225,0,0,1-1.0207.0272L4.7858,19.2976a.7225.7225,0,0,1,.029-1.0206L18.03,5.084A.7227.7227,0,0,1,19.0507,5.0567Z"/><path class="a" d="M23.2711,2.5133l6.19,6.4112L32.9614,4.447"/><path class="a" d="M24.3967,45.4967l-6.6711-6.1641-3.2489,3.9326"/></svg>
+				
 		</div>
 	</body>
-	
-	<style>
-		@font-face{
-			font-family: "classicalComic";
-			src: local("ClassicComic"), local("classic comic w01 regular"),
-			url("Letras/ClassicComicRegular.ttf") format('truetype');
-		}
-		@keyframes pattern01Move{
-			from{
-				background-position: 0px 0px;
-			}
-			to{
-				background-position: 400px 400px;
-			}
-		}
-		@media only screen and (orientation: landscape){
-			#controles_cheroso {
-				position: absolute;
-				z-index: 5;
-				width: 100vw; /* Cobrir a largura da tela */
-				height: 100vh; /* Cobrir a altura da tela */
-			}
-			body {
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				margin: 0;
-				
-				background-color: #00004f;
-			}
-	
-			.gameScreen {
-				position: absolute;
-				aspect-ratio: 1/1;
-			}
-	
-			#personagens {
-				
-				z-index: 2;
-			}
-	
-			#transicoes {
-				
-				z-index: 3;
-			}
-	
-			#HUD {
-				z-index: 4;
-			}
-			.alerta{
-				display: none;
-			}
-			#error{
-				display: none;
-			}
-		}
-		@media only screen and (orientation: portrait){
-			#controles_cheroso {
-				display: none;
-			}
-			.gameScreen{
-				display: none;
-			}
-			body{
-				background-color: #4A0000;
-				background-image: url("imagens/UI/castWarn.png");
-				background-position: center;
-				baclground-size: cover;
-				animation: pattern01Move 10s linear infinite;
-			}
-			.alerta{
-				width:75%;
-				height: 80%;
-				margin: 10%;
-				display: flex;
-				text-shadow: 3px 3px 5px #000;
-				box-shadow: 3px 3px 5px #000;
-				color: #EBD68B;
-				border: 5px dashed #EBD68B;
-				border-radius: 25px;
-				text-shadow: 7px #000;
-				backdrop-filter:blur(5px);
-				text-align: center;
-				justify-content: center;
-				align-items:center;
-				font-size: 30px;
-				z-index: 1;
-				font-family: "classicalComic";
-			}
-		}
-	</style>
 	<script src = "controls_mg_sew.js"></script>
 	<script src = "maps_mgSew.js"></script>
 	<script src = "Char.js"></script>
+	<script src = "dialogs.js"></script>
 	<script src = "UI.js"></script>
 	<script src = "backgrounds.js"></script>
 	<script src = "cenery.js"></script>
-	<script src = "dialogs.js"></script>
+	<script src = "collisions.js"></script>
 	<script src = "Kill_myself.js"></script>
 </html>
