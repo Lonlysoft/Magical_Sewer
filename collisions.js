@@ -53,6 +53,42 @@ const col = {
 		}
 	},
 	
+	AABBsideAmount: function(retangulo1, retangulo2){
+		let totalX = retangulo1[2]/2 + retangulo2[2]/2;
+		let totalZ = retangulo1[3]/2 + retangulo2[3]/2;
+		//basicamente fazemos uma manipulação pra achar o centro dos retangulos e calcular a distância entre eles.
+		let distanciaDosCentrosX = Math.abs((retangulo1[0] + retangulo1[2]/2) - (retangulo2[0] + retangulo2[2]/2));
+		let distanciaDosCentrosZ = Math.abs((retangulo1[1] + retangulo1[3]/2) - (retangulo2[1] + retangulo2[3]/2));
+		
+		if(distanciaDosCentrosX <= totalX && distanciaDosCentrosZ <= totalZ){
+			let overLapX = totalX - distanciaDosCentrosX;
+			let overLapZ = totalZ - distanciaDosCentrosZ;
+			if(overLapZ > overLapX){ //significa que o negócio interceptou e foi pela esquerda ou direita.
+				if(retangulo1[0] < retangulo2[0]){
+					return overLapX *(-1)
+					// →
+				}
+				else{
+					return overLapX
+					// ←
+				}
+			}
+			else{//se não foi pela esquerda ou pela direita só pode ter sido por cima ou por baixo.
+				if(retangulo1[1] < retangulo2[1]){
+					return overLapZ*(-1);
+					// ↓
+				}
+				else{
+					return overLapZ;
+					// ↑
+				}
+			}
+		}
+		else{
+			return 0;
+		}
+	},
+	
 	createAtkBox: function(cu){
 		cu.x += cu.w;
 		cu.z += cu.p;
@@ -111,20 +147,26 @@ const col = {
 }
 
 function colisionar(entity){
-	if(entity.ser.WorldPos.x<0 || entity.ser.WorldPos.z<0){
-		entity.ser.hp = 0;
-		personagemAtual.ser.velocity.y += 1.5;
+	if(entity.ser.WorldPos.x<30){
+		entity.ser.WorldPos.x = 30;
+	}
+	if(entity.ser.WorldPos.z<30){
+		entity.ser.WorldPos.z = 30;
 		//aqui teria uma tela de game over porque ele tà out of bounds
 	}
 	
-	if(entity.ser.WorldPos.x>mapaAtual.largura*60 || entity.ser.WorldPos.z>mapaAtual.altura*60){
-		entity.ser.hp = 0;
+	if(entity.ser.WorldPos.x>=(mapaAtual.largura-1)*60+30){
+		entity.ser.WorldPos.x = (mapaAtual.largura-1)*60+30;
+	}
+	
+	if(entity.ser.WorldPos.z>=(mapaAtual.altura)*60){
+		entity.ser.WorldPos.z = (mapaAtual.altura)*60;
 		//aqui tbm
 	}
 	
-	entity.ser.boxCol.x = entity.ser.WorldPos.x-30;
-	entity.ser.boxCol.z = entity.ser.WorldPos.z-30;
-	entity.ser.boxCol.y = entity.ser.WorldPos.y-90;
+	entity.ser.boxCol.x = entity.ser.WorldPos.x - entity.ser.boxCol.w/2;
+	entity.ser.boxCol.z = entity.ser.WorldPos.z - entity.ser.boxCol.p;
+	entity.ser.boxCol.y = entity.ser.WorldPos.y - entity.ser.boxCol.h;
 	
 	switch(mapaAtual.shadowGrid[entity.ser.inGrid.x][entity.ser.inGrid.z]){
 		default:
@@ -137,24 +179,16 @@ function colisionar(entity){
 			entity.ser.layer = 0
 		break;
 	}
-	
-	fale("camada: "+ entity.ser.layer + "", 45, 325);
-	let x_intro = Math.floor(Camera.x/60);
-	let x_end = Math.floor((Camera.x+Camera.w)/60);
-	let y_intro = Math.floor(Camera.y/60) + entity.ser.WorldPos.y;
-	let y_end = Math.floor((Camera.y+Camera.h)/60) + entity.ser.WorldPos.y;
-	
-	if(x_intro < 0) x_intro = 0;
-	if(y_intro < 0) y_intro = 0;
-	if(x_end > mapaAtual.largura) x_end = mapaAtual.largura;
-	if(y_end > mapaAtual.altura) y_end = mapaAtual.altura;
-
-		for(let j = x_intro; j < x_end; j++){
-			for(let i = y_intro; i < y_end; i++){
-				let renderPlusX = j * 60 - Camera.x + canvas.width/2 - Camera.w/2;
-				let renderPlusY = i * 60 - Camera.y + canvas.height/2 - Camera.h/2;
-				if(entity.ser.WorldPos.y < mapaAtual.limites[i][j].y){
-					switch(col.AABBside([entity.ser.boxCol.x, entity.ser.boxCol.z, entity.ser.boxCol.w, entity.ser.boxCol.p], [mapaAtual.limites[i][j].x, mapaAtual.limites[i][j].z, 60, 60])){
+	let playerCubeCol = [entity.ser.boxCol.x, entity.ser.boxCol.z, entity.ser.boxCol.w, entity.ser.boxCol.p, entity.ser.boxCol.y, entity.ser.boxCol.h]
+	let structCubeCol;
+	for(let i = 0; i < stackDeEstruturas.length; i++){
+		if(col.AABB3D(playerCubeCol, structCubeCol)){
+			console.log("c");
+			structCubeCol = [stackDeEstruturas[i].x, stackDeEstruturas[i].z, stackDeEstruturas[i].w, stackDeEstruturas[i].p, stackDeEstruturas[i].y, stackDeEstruturas[i].h];
+			switch(stackDeEstruturas[i].tipo){
+				case "solid":
+					//alterar a AABB3Dside. por motivos óbvios
+					switch(col.AABB3Dside(playerCubeCol, structCubeCol)){
 						case 'N':
 							entity.ser.WorldPos.z += entity.ser.velocity.z;
 							entity.ser.velocity.z = Math.floor(entity.ser.velocity.z/entity.ser.peso);
@@ -175,17 +209,56 @@ function colisionar(entity){
 							entity.ser.WorldPos.x += entity.ser.velocity.x;
 							entity.ser.velocity.x = Math.floor(entity.ser.velocity.x/5);
 						break;
-						
-						case "U":
+						case 'U':
+							entity.ser.WorldPos.y -= entity.ser.velocity.y;
+							entity.ser.velocity.y = Math.floor(entity.ser.velocity.y/5);
+						break;
+						case 'D':
 							entity.ser.WorldPos.y += entity.ser.velocity.y;
-							personagemAtual.pontoCentral[1] -= entity.ser.velocity.y;
-							entity.ser.velocity.y = Math.floor(entity.ser.velocity.y/3);
+							entity.ser.velocity.y = Math.floor(entity.ser.velocity.y/5);
+						break;
+					}//fim switch
+				break;
+			}
+		}
+	}
+	
+	//começou as colisões em relação ao tileset
+	let x_intro = Math.floor(Camera.x/60);
+	let x_end = Math.floor((Camera.x+Camera.w)/60);
+	let y_intro = Math.floor(Camera.y/60);
+	let y_end = Math.floor((Camera.y+Camera.h)/60);
+	
+	if(x_intro < 0) x_intro = 0;
+	if(y_intro < 0) y_intro = 0;
+	if(x_end > mapaAtual.largura) x_end = mapaAtual.largura;
+	if(y_end > mapaAtual.altura) y_end = mapaAtual.altura;
+	let playerBoxCol = [entity.ser.boxCol.x, entity.ser.boxCol.z, entity.ser.boxCol.w, entity.ser.boxCol.p];
+		for(let j = x_intro; j < x_end; j++){
+			for(let i = y_intro; i < y_end; i++){
+				let mapBoxCol = [mapaAtual.limites[i][j].x, mapaAtual.limites[i][j].z, 60, 60];
+				if(entity.ser.WorldPos.y < mapaAtual.limites[i][j].y){
+					
+					switch(col.AABBside(playerBoxCol, mapBoxCol)){
+						case 'N':
+							entity.ser.WorldPos.z += entity.ser.velocity.z;
+							entity.ser.velocity.z = Math.floor(entity.ser.velocity.z/entity.ser.peso);
+							
 						break;
 						
-						case "D":
-							entity.ser.WorldPos.y -= entity.ser.velocity.y;
-							personagemAtual.pontoCentral[1] += entity.ser.velocity.y;
-							entity.ser.velocity.y = Math.floor(entity.ser.velocity.y/3);
+						case 'S':
+							entity.ser.WorldPos.z -= entity.ser.velocity.z;
+							entity.ser.velocity.z = Math.floor(entity.ser.velocity.z/entity.ser.peso);
+						break;
+						
+						case 'E':
+							entity.ser.WorldPos.x -= entity.ser.velocity.x;
+							entity.ser.velocity.x = Math.floor(entity.ser.velocity.x/entity.ser.peso);
+						break;
+						
+						case 'W':
+							entity.ser.WorldPos.x += entity.ser.velocity.x;
+							entity.ser.velocity.x = Math.floor(entity.ser.velocity.x/entity.ser.peso);
 						break;
 					}//fim switch
 				}
@@ -194,20 +267,54 @@ function colisionar(entity){
 }
 //fim colisionar
 
+function isOnGround(entitY, struturY){
+	return entitY <= struturY;
+}
+
 function handleYcoords(entity){
-	if(entity.ser.pulando){
-		entity.ser.velocity.y += entity.ser.STR;
-		entity.ser.WorldPos.y += entity.ser.velocity.y;
-		entity.pontoCentral[1] -= entity.ser.velocity.y;
+	entity.ser.pontoCentral[1] -= entity.ser.velocity.y
+	entity.ser.WorldPos.y += entity.ser.velocity.y;
+	
+	let currLimEnd;
+	switch(entity.ser.direcao){
+		case 1:
+			currLimEnd = mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z, 60)][WorldToGrid(entity.ser.WorldPos.x, 60)].y
+		break;
+		case 2:
+			currLimEnd = mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z, 60)][WorldToGrid(entity.ser.WorldPos.x + entity.ser.boxCol.w/2, 60)].y
+		break;
+		case 3:
+			currLimEnd = mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z - entity.ser.boxCol.p, 60)][WorldToGrid(entity.ser.WorldPos.x, 60)].y
+		break;
+		case 4:
+			currLimEnd = mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z, 60)][WorldToGrid(entity.ser.WorldPos.x - entity.ser.boxCol.w/2, 60)].y;
+		break;
+		case 5:
+			currLimEnd = mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z, 60)][WorldToGrid(entity.ser.WorldPos.x + entity.ser.boxCol.w/2, 60)].y;
+		break;
+		case 6:
+			currLimEnd = mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z - entity.ser.boxCol.p, 60)][WorldToGrid(entity.ser.WorldPos.x + entity.ser.boxCol.w/2, 60)].y;
+		break;
+		case 7:
+			currLimEnd = mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z - entity.ser.boxCol.p, 60)][WorldToGrid(entity.ser.WorldPos.x - entity.ser.boxCol.w/2, 60)].y;
+		break;
+		case 8:
+			currLimEnd = mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z, 60)][WorldToGrid(entity.ser.WorldPos.x - entity.ser.boxCol.w/2, 60)].y;
+		break;
 	}
-	if(entity.ser.velocity.y >= entity.ser.JPOW){
-		entity.ser.pulando = false;
+	
+	
+	let currLim = mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z, 60)][WorldToGrid(entity.ser.WorldPos.x, 60)].y;
+	if(!isOnGround(entity.ser.WorldPos.y, currLim) && !isOnGround(entity.ser.WorldPos.y, currLimEnd)){
+		entity.ser.velocity.y -= 6;
+		entity.ser.onGround = false;
+	}
+	else{
 		entity.ser.velocity.y = 0;
+		entity.ser.onGround = true;
 	}
-	if(!entity.ser.pulando && entity.ser.WorldPos.y > mapaAtual.limites[WorldToGrid(entity.ser.WorldPos.z, 60)][WorldToGrid(entity.ser.WorldPos.x, 60)].y){
-		entity.fazendo = "caindo";
-		entity.ser.velocity.y += 1.5;
-		entity.ser.WorldPos.y -= entity.velocity.y;
-		entity.pontoCentral[1] += entity.velocity.y;
+	if(isOnGround(entity.ser.WorldPos.y, currLim) && entity.ser.WorldPos.y < currLim){
+		entity.ser.WorldPos.y = currLim;
+		entity.ser.pontoCentral[1] = CentroDaTela[1];
 	}
 }
