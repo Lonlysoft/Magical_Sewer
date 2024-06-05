@@ -32,24 +32,28 @@
 			@media only screen and (orientation: landscape){
 				#controles_cheroso {
 					position: absolute;
+					left: 50%;
+					top: 50%;
+					transform: translate(-50%, -50%);
 					z-index: 5;
-					width: 100vw; /* Cobrir a largura da tela */
-					height: 100vh; /* Cobrir a altura da tela */
+					max-width: 100%; /* Cobrir a largura da tela */
+					max-height: 100%; /* Cobrir a altura da tela */
 				}
 				body {
-					display: flex;
-					justify-content: center;
-					align-items: center;
 					margin: 0;
 					
 					background-color: #00004f;
 				}
 		
 				.gameScreen {
+					border-radius: 20px;
 					position: absolute;
 					aspect-ratio: 1/1;
-					width: 100vh;
-					height: 100vh;
+					left: 50%;
+					top: 50%;
+					transform: translate(-50%, -50%);
+					max-width: 100vh;
+					max-height: 100vh;
 				}
 				
 				#personagens {
@@ -114,7 +118,7 @@
 					font-weight: 900;
 				}
 				.instrucao{
-					width:20vw;
+					width: 20vw;
 					height: 20vw;
 				}
 			}
@@ -135,7 +139,9 @@
 	</body>
 	<script src = "controls_mg_sew.js"></script>
 	<script src = "maps_mgSew.js"></script>
+	<script src = "mapa_assets.js"></script>
 	<script src = "Char.js"></script>
+	<script src = "char_assets.js"></script>
 	<script src = "dialogs.js"></script>
 	<script src = "UI.js"></script>
 	<script src = "backgrounds.js"></script>
