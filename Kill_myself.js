@@ -57,23 +57,6 @@ function limpar(ctx){
 }
 
 //para a tela título
-function TelaTitulo(){
-	ctx_BG.drawImage(title_screen, 0, 0, 520, 520)
-	if(upper >= 20){
-		ctx.drawImage(logotipo, 60, 100, 420, 102)
-		
-		//colocar a animação do menu indo
-		ctx.globalAlpha = frame/10
-		ctx.drawImage(comando[0], canvas.width/2 - 105, 416, 210, 34)
-		ctx.globalAlpha = 1
-	}
-	else {
-		ctx.globalAlpha = frame/10;
-		ctx.drawImage(logotipo, 60, canvas.height+upper**2*-1, 420, 102);
-		ctx.globalAlpha = 1;
-		upper++;
-	}
-}
 
 /*---- M A I N ----*/
 const fps = 33
@@ -243,15 +226,15 @@ function GamePlay(){
 			}
 			action("personagem");
 			colisionar(personagemAtual);
-			controlState_save();
-			Camera.moverPara(personagemAtual.ser.WorldPos.x, personagemAtual.ser.WorldPos.z);
-			escreva("i "+ personagemAtual.ser.WorldPos.y > mapaAtual.limites[WorldToGrid(personagemAtual.ser.WorldPos.z, 60)][WorldToGrid(personagemAtual.ser.WorldPos.x, 60)].y + "", 45, 205);
 			handleYcoords(personagemAtual);
-			
+			controlState_save();
+			Camera.moverPara(personagemAtual.ser.WorldPos.x, personagemAtual.ser.WorldPos.z, personagemAtual.ser.WorldPos.y);
+			escreva("i "+ personagemAtual.ser.pontoCentral[1] + "", 45, 205);
+			escreva("vy "+ personagemAtual.ser.velocity.y + "", 45, 225);
 			//renderHUD();
 			escreva("fznd "+ personagemAtual.ser.fazendo + "", 45, 265);
 			escreva("Y: "+personagemAtual.ser.WorldPos.y, 45, 185);
-			fale(""+personagemAtual.ser.Nome + "		hp:" + personagemAtual.ser.hp + "		score: " + personagemAtual.ser.xp+"", 30, 30);
+			fale(""+personagemAtual.ser.Nome + "		hp:" + personagemAtual.ser.hp + "		x: " + personagemAtual.ser.WorldPos.x+" vx: " + personagemAtual.ser.velocity.x, 30, 30);
 		break;
 			
 		case 3:
