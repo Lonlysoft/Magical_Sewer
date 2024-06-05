@@ -1,31 +1,49 @@
-var Camera ={
-	x: 100, y: 100, w: 600, h: 600,
-	moverPara: function(x, y){
-		this.x = x - this.w/2;
-		this.y = y - this.h/2;
-		
+var Camera = {
+	x: 100, y: 100, z: 0, w: 600, h: 600,
+	moverPara: function(x, y, z){
+		this.x = x - this.w*0.5;
+		this.y = y - this.h*0.5;
+		this.z = z;
 		/*
-		this.x += (x - this.x - this.w/2)*0.05;
-		this.y += (y - this.y - this.h/2)*0.05;
+		this.x += (x - this.x - this.w*0.5)*0.05;
+		this.y += (y - this.y - this.h*0.5)*0.05;
 		*/
 	}
-	
 };
 
 class Boundary{
-	constructor({posicao}){
-		this.pos = posicao;
+	constructor(x, y, z){
+		this.x = x;
+		this.y = y;
+		this.z = z;
 		this.w = 60;
-		this.h = 60;
+		this.p = 60;
+		this.h = y;
 	}
 }
+
+class Plataforma{
+	constructor(x, z, w, p, y, h, tipo){
+		this.x = x;
+		this.y = y;
+		this.z = z;
+		this.p = p;
+		this.w = w;
+		this.h = h;
+	}
+}
+
+//plataformas
+var stackDeEstruturas = [new Plataforma(120, 120, 50, 50, 30, 30, "solid")];
+
+//pessoas e NPCS
 
 class LevelScenery{
 	constructor(largura, altura, Nome, chaozinhoMaroto, sombrinhas, angulacaoDeTerreno, relevoFudido, colisaoDosChars, objectosMarotos, objectMarotosFrente){
 		this.floorGrid = chaozinhoMaroto;
 		this.objectGrid = objectosMarotos;
 		this.objectGridFront = objectMarotosFrente;
-		this.shadowGrid = sombrinhas
+		this.shadowGrid = sombrinhas		
 		this.ang = angulacaoDeTerreno;
 		this.relevoGrid = relevoFudido;
 		this.beingGrid = colisaoDosChars;
@@ -37,8 +55,9 @@ class LevelScenery{
 	
 	settarFronteiras(){
 		for(let i = 0; i < this.altura; i++){
+			this.limites.push(new Array());
 			for(let j = 0; j < this.largura; j++){
-				this.limites.push(new Boundary({posicao:{x: i * 60, y: j * 60}}, this.relevoGrid[i*this.altura+j]));
+				this.limites[i].push(new Boundary(j * 60, this.relevoGrid[i][j] * 60, i * 60));
 			}
 		}
 	}
@@ -52,8 +71,8 @@ class LevelScenery{
 		else if(type == 2){
 			let x_grid = Math.floor((Camera.x)/60);
 			let x_endGrid = Math.floor((Camera.x+Camera.w)/60);
-			let y_grid = Math.floor((Camera.y)/60);
-			let y_endGrid = Math.floor((Camera.y+Camera.h)/60);
+			let y_grid = Math.floor((Camera.y/60) - (Camera.z/60));
+			let y_endGrid = Math.floor((Camera.y+Camera.h)/60 - (Camera.z/60));
 			
 			if(x_grid < 0) x_grid = 0;
 			if(y_grid < 0) y_grid = 0;
@@ -62,33 +81,33 @@ class LevelScenery{
 			
 			for(let i = x_grid; i < x_endGrid; i++){
 				for(let j = y_grid; j < y_endGrid; j++){
-					let renderPlusX = i * 60 - Camera.x + canvas.width/2 - Camera.w/2;
-					let renderPlusY = j * 60 - Camera.y + canvas.height/2 - Camera.h/2;
-					switch(this.floorGrid[j*this.largura + i]){
-						case "gn":
+					let renderPlusX = i * 60 - Camera.x + canvas.width*0.5 - Camera.w*0.5;
+					let renderPlusY = j * 60 - Camera.y + canvas.height*0.5 - Camera.h*0.5;
+					switch(this.floorGrid[j][i]){
+						case 12:
 							ctx.fillStyle = "DarkGreen";
 							ctx.fillRect(renderPlusX, renderPlusY, 60, 60);
 							break;
-						case "wt":
+						case 5:
 							ctx.fillStyle = "#39496F";
 							ctx.fillRect(renderPlusX, renderPlusY, 60, 60);
 							
 							break;
-						case "mr":
+						case 555:
 							ctx.fillStyle = "#404040";
 							ctx.fillRect(renderPlusX, renderPlusY, 60, 60); 
 							break;
-						case "cl":
+						case 7:
 							ctx.fillStyle = "#ff00ff";
 							ctx.fillRect(renderPlusX, renderPlusY, 60, 60);
 							
 							break;
-						case "w1":
+						case 2:
 							ctx.fillStyle = "#FFFF97"
 							ctx.fillRect(renderPlusX, renderPlusY, 60, 60);
 							
 							break;
-						case "gd":
+						case 1:
 							ctx.fillStyle = "#6CAD29"
 							ctx.fillRect(renderPlusX, renderPlusY, 60, 60);
 							
@@ -111,13 +130,14 @@ class LevelScenery{
 		
 		let x_grid = Math.floor((Camera.x)/60);
 		let x_endGrid = Math.floor((Camera.x+Camera.w)/60);
-		let y_grid = Math.floor((Camera.y)/60);
-		let y_endGrid = Math.floor((Camera.y+Camera.h)/60);
+		let y_grid = Math.floor((Camera.y)/60)-Math.floor((Camera.y)/60);
+		let y_endGrid = Math.floor((Camera.y+Camera.h)/60)-Math.floor((Camera.y)/60);
 			
 		if(x_grid < 0) x_grid = 0;
 		if(y_grid < 0) y_grid = 0;
 		if(x_endGrid > this.largura) x_endGrid = this.largura;
 		if(y_endGrid > this.altura) y_endGrid = this.altura;
+		let objectGrid;
 		
 		switch(camada){
 			case 1: objectGrid = this.objectGrid;
@@ -128,116 +148,21 @@ class LevelScenery{
 		
 		for(let i = x_grid; i < x_endGrid; i++){
 			for(let j = y_grid; j < y_endGrid; j++){
-				let renderPlusX = i * 60 - Camera.x + canvas.width/2 - Camera.w/2;
-				let renderPlusY = j * 60 - Camera.y + canvas.height/2 - Camera.h/2;
-				switch(objectGrid[i][j]){
-					case "pa":
-							objects.parede.desenhar(renderPlusX, renderPlusY);//lembrar que é placeholder
-							break;
-					case "t1":
-						objects.arvore01.desenhar(renderPlusX+30, renderPlusY-objects.arvore01.pos2Render[1]);
-						break;
-					case "c3":
-						objects.casa.desenhar(renderPlusX+60 - objects.casa.pos2Render[0], renderPlusY)
-						break;
-					case "c5":
-						objects.casa.desenhar((renderPlusY+60) - objects.casa.pos2Render[0], (renderPlusY + 60) - objects.casa.pos2Render[1]);
-						break;
-					case "c8":
-						objects.casa.desenhar(renderPlusX, renderPlusY);
-						break;
-						
-					case "c7":
-						objects.casa.desenhar(renderPlusX, renderPlusY + 60 - objects.casa.pos2Render[1]);
-						break;
+				let renderPlusX = i * 60 - Camera.x + canvas.width*0.5 - Camera.w*0.5;
+				let renderPlusY = j * 60 - Camera.y + canvas.height*0.5 - Camera.h*0.5;
+				switch(objectGrid[j][i]){
+					case 7: 
+						ctx.fillStyle = "#404040";
+						ctx.fillRect(renderPlusX, renderPlusY, 60, 60); 
+					break;
+					case 1:
+						ctx.fillStyle = "#333333";
+						ctx.fillRect(renderPlusX, renderPlusY, 60, 60);
+					break;
 					default:
-						
 						break;
-				}
-			}
-		}
-	}
-}
-
-var casa =
-[
-["  ", "  ", "r4", "r2", "  ", "  "],
-["  ", "r4", "rf", "rf", "r2", "  "],
-["r4", "rf", "rf", "rf", "rf", "r2"],
-["rf", "rf", "rf", "rf", "rf", "rf"],
-["rf", "rf", "rf", "rf", "rf", "rf"],
-["rf", "rf", "rf", "rf", "rf", "rf"],
-["rf", "rf", "r5", "r3", "rf", "rf"],
-["rf", "r5", "w1", "w1", "r3", "rf"],
-["r5", "w1", "w1", "w1", "w1", "r3"],
-["w1", "w1", "w1", "w1", "w1", "w1"],
-["w1", "wd", "wd", "w1", "dt", "w1"],
-["w1", "w1", "w1", "w1", "dr", "w1"],
-];
-
-
-var ftest = new LevelScenery(
-	
-	5, 5, "MicroInterior",
-	
-	//chao
-	[
-	 "gd", "mr", "bu", "gn", "wt",
-	 "gd", "mr", "bu", "gn", "wt",
-	 "gd", "mr", "bu", "gn", "wt",
-	 "gd", "mr", "bu", "gn", "wt",
-	 "gd", "mr", "bu", "gn", "wt"
-	],
-	
-	//colisao
-	
-	[
-	"S", "0", "S", "S", "0",
-	"S", "0", "S", "S", "0",
-	"S", "0", "S", "S", "0",
-	"S", "0", "S", "S", "0",
-	"S", "0", "S", "S", "0"
-	],
-	
-	[],
-	//relevo
-	
-	[
-	2, 2, 2, 2, 2,
-	2, 0, 0, 0, 2,
-	2, 0, 8, 0, 2,
-	2, 0, 0, 0, 2,
-	2, 2, 2, 2, 2
-	],
-	
-	//colisao dos personagens
-	
-	[
-	["  ", "  ", "  ", "  ", "  "],
-	["  ", "  ", "  ", "  ", "  "],
-	["  ", "  ", "  ", "  ", "  "],
-	["  ", "  ", "  ", "  ", "  "],
-	["  ", "  ", "  ", "  ", "  "]
-	],
-	
-	//objetos
-	
-	[
-	" ", " ", " ", " ", " ", 
-	" ", " ", " ", " ", " ",
-	" ", " ", " ", " ", " ", 
-	" ", " ", " ", " ", " ",
-	" ", " ", " ", " ", " "
-	],
-	
-	//objetos camada 2
-	
-	[
-	" ", " ", " ", " ", " ", 
-	" ", " ", " ", " ", " ",
-	"t1", " ", "t2", " ", " ", 
-	" ", " ", " ", " ", " ",
-	"t3", " ", "t4", " ", " "
-	]
-	
-);
+				}//fim switch
+			}//fim for do y.
+		}// fim for do x.
+	}//fim objectDraw
+}// fim Classe levelScenery
