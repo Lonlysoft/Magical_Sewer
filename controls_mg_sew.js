@@ -1,40 +1,30 @@
 var controls_canvas = document.getElementById("controles_cheroso")
 var controls_ctx = controls_canvas.getContext("2d")
-controls_canvas.width = 962;
-controls_canvas.height = 520;
+controls_canvas.width = Math.floor(document.documentElement.clientWidth);
+controls_canvas.height = Math.floor(document.documentElement.clientHeight);
 
-var mover = true;
+var boundingRect = undefined
+var aspectRatio = undefined
 
-function assemblySTA(tipo){
-	if(tipo === "walk"){
-		switch(personagemAtual.STA){
-			case 1: case 2: case 3:
-				personagemAtual.ser.fazendo = 'andarR';
-			break;
-			
-			case 6: case 7: case 8:
-				personagemAtual.ser.fazendo = 'andarL';
-			break;
-			
-			default:
-				personagemAtual.ser.fazendo = "still";
-			break;
-		}
-		if(personagemAtual.STA > 8){
-			personagemAtual.STA = 0;
-		}
-		else{
-			personagemAtual.STA++;
-		}
-	}
+function resize(){
+	controls_canvas.width = Math.floor(document.documentElement.clientWidth);
+	controls_canvas.height = Math.floor(document.documentElement.clientHeight);
+	// these next two lines are used for adjusting and scaling user touch input coordinates:
+	boundingRect = controls_canvas.getBoundingClientRect();
+	aspectRatio = controls_canvas.width / controls_canvas.height;
+	resize_ctrl(Controule.Botoeses);
+}
+
+function resize_ctrl(ControuleBotoeses){
+	for(let i = 0; i < ControuleBotoeses.length; i++){
+		ControuleBotoeses[i].x = controls_canvas.width/18*ControuleBotoeses[i].OverPos.x;
+		ControuleBotoeses[i].y = controls_canvas.height/10*ControuleBotoeses[i].OverPos.y;
+	}	
 }
 
 
 function desenharBotoes(buttons){
 	var button, index;
-	let buttonImage = new Image();
-	buttonImage.src = "src/imagens/controls.png";
-
 	for (index = buttons.length - 1; index > -1; -- index) {
 		button = buttons[index]
 		if(buttons[index].tipo === "visivel"){
@@ -51,7 +41,7 @@ function desenharBotoes(buttons){
 }
 
 class Butao{
-	constructor(x, y, largura, altura, cor, tipo){
+	constructor(x, y, largura, altura, cor, tipo, proporcaoPosX = 0, proporcaoPosY = 0){ // ultimos 2 argumentos são necessários por motivos apenas de responsividade
 		this.ativo = false;
 		this.cor = cor;
 		this.altura = altura;
@@ -59,6 +49,9 @@ class Butao{
 		this.x = x;
 		this.y = y;
 		this.tipo = tipo;
+		this.OverPos = {
+			x: proporcaoPosX, y: proporcaoPosY
+		};
 	}
 	contemPonto(x,y){
 		if(x < this.x || x > this.x + this.largura || y < this.y || y > this.y + this.altura){
@@ -69,41 +62,38 @@ class Butao{
 }
 
 var Controule = {
-	Botoeses: [new Butao(10,  controls_canvas.height - 160, 80, 80,"#888888","visivel"),//⬅ 0
-				new Butao(90,  controls_canvas.height- 240, 80, 80, "#888888", "visivel"),//⬆ 1
-				new Butao(170,  controls_canvas.height - 160, 80, 80, "#888888", "visivel"),//➡ 2
-				new Butao(90,  controls_canvas.height - 80, 80, 80, "#888888", "visivel"),//⬇ 3
-				new Butao(10,  controls_canvas.height - 80, 80, 80, "#006000", "invisivel"),//↙ 4
-				new Butao(170,  controls_canvas.height - 80, 80, 80, "#009000", "invisivel"),//↘ 5
-				new Butao(170,  controls_canvas.height - 240, 80, 80, "#005000", "invisivel"),//↗ 6
-				new Butao(10,  controls_canvas.height - 240, 80, 80, "#000800", "invisivel"),//↖ 7
+	Botoeses: [new Butao(controls_canvas.width/18*0.5,  controls_canvas.height/10*6.5, 80, 80,"#888888","visivel", 0.5, 6.5),//⬅ 0
+				new Butao(controls_canvas.width/18*2,  controls_canvas.height/10*5, 80, 80, "#888888", "visivel", 2, 5),//⬆ 1
+				new Butao(controls_canvas.width/18*3.5,  controls_canvas.height/10*6.5, 80, 80, "#888888", "visivel", 3.5, 6.5),//➡ 2
+				new Butao(controls_canvas.width/18*2,  controls_canvas.height/10*8, 80, 80, "#888888", "visivel", 2, 8),//⬇ 3
+				new Butao(controls_canvas.width/18*0.5,  controls_canvas.height/10*8, 80, 80, "#006000", "invisivel", 0.5, 8),//↙ 4
+				new Butao(controls_canvas.width/18*3.5,  controls_canvas.height/10*8, 80, 80, "#009000", "invisivel", 3.5, 8),//↘ 5
+				new Butao(controls_canvas.width/18*3.5,  controls_canvas.height/10*5, 80, 80, "#005000", "invisivel", 3.5, 5),//↗ 6
+				new Butao(controls_canvas.width/18*0.5,  controls_canvas.height/10*5, 80, 80, "#000800", "invisivel", 0.5, 5),//↖ 7
 				
 				//botao
-				new Butao(controls_canvas.width - 170,  controls_canvas.height-80, 80, 80,"#792F00" , "visivel"),//B 8
-				new Butao(controls_canvas.width - 250,  controls_canvas.height-160, 80, 80, "#00739F","visivel"),//Y 9
-				new Butao(controls_canvas.width - 90,  controls_canvas.height-160 ,80 ,80 , "#008849","visivel"),//A 10
+				new Butao(controls_canvas.width/18*14.5,  controls_canvas.height/10*8, 80, 80, "#792F00" , "visivel", 14.5, 8),//B 8
+				new Butao(controls_canvas.width/18*13,  controls_canvas.height/10*6.5, 80, 80, "#00739F","visivel", 13, 6.5),//Y 9
+				new Butao(controls_canvas.width/18*16,  controls_canvas.height/10*6.5 ,80 ,80, "#008849","visivel", 16, 6.5),//A 10
 				//triggers
-				new Butao(10, 25, 120, 60, "#888888", "visivel"),//select
-				new Butao(controls_canvas.width - 130, 25, 120, 60, "#8888AB", "visivel"),//z
-				new Butao(controls_canvas.width/2 - 60, 25, 120, 60, "#888888", "visivel"),//start
-				new Butao(controls_canvas.width - 170, controls_canvas.height- 240, 80, 80,"#79002f" , "visivel")//x
+				new Butao(controls_canvas.width/18*0.5, controls_canvas.height/10*0.5, 120, 60, "#888888", "visivel", 0.5, 0.5),//select
+				new Butao(controls_canvas.width/18*15, controls_canvas.height/10*0.5, 120, 60, "#8888AB", "visivel", 15, 0.5),//z
+				new Butao(controls_canvas.width/18*8, controls_canvas.height/10*0.5, 120, 60, "#888888", "visivel", 8, 0.5),//start
+				new Butao(controls_canvas.width/18*14.5, controls_canvas.height/10*5, 80, 80,"#79002f" , "visivel", 14.5, 5)//x
 	],
-	
+	graph: document.querySelector("#controlGraphics"),
 	testarButoes: function(target_touches){
-		var bucto, indice0, indice1, toq
+		var bucto, indice0, indice1, toq;
 		
 		for(indice0 = this.Botoeses.length-1; indice0 > -1; indice0--){
 			bucto = this.Botoeses[indice0]
 			bucto.ativo = false
 			
 			for(indice1 = target_touches.length-1;indice1 > -1;indice1--){
-				toq = target_touches[indice1]
-				if(bucto.contemPonto(toq.clientX , toq.clientY)){
+				toq = target_touches[indice1];
+				if(bucto.contemPonto((toq.clientX - boundingRect.left), (toq.clientY - boundingRect.top))){
 					bucto.ativo = true;
 					break;
-				}
-				if(indice0 > 7){
-					
 				}
 			}
 		}
@@ -163,7 +153,7 @@ var gameFeature = {
 };
 
 function checkPontoCentral(){
-	if(personagemAtual.ser.pontoCentral[0] == canvas.width/2 || personagemAtual.ser.pontoCentral[1] == canvas.height/2){
+	if(personagemAtual.pontoCentral[0] == canvas.width/2 || personagemAtual.pontoCentral[1] == canvas.height/2){
 		return true;
 	}
 	else{
@@ -175,14 +165,8 @@ function action(type){
 	let contanter = 0
 	switch(type){
 		case "start":
-			if(Controule.Botoeses[13].ativo){
-				contanter++
-				if(contanter == 1){
-					demandarTransicao = true;
-				}
-			}
-			else{
-				contanter = 0;
+			if(Controule.Botoeses[13].ativo && controlState.start == false){
+				demandarTransicao = true;
 			}
 		break;
 		case "pause":
@@ -211,131 +195,84 @@ function action(type){
 		
 		case "personagem":
 			if(Controule.Botoeses[0].ativo){//⬅
-				personagemAtual.ser.andar("x");
+				personagemAtual.pol = -1;
+				personagemAtual.andar("x");
+				personagemAtual.direcao = 4;
 				
-				personagemAtual.ser.direcao = 4;
-				personagemAtual.ser.WorldPos.x-=personagemAtual.ser.velocity.x;
-				if( checkPontoCentral() == false){
-					personagemAtual.ser.pontoCentral[0]-=personagemAtual.ser.velocity.x;
-				}
-				if(fazendoSav != "pulando" || fazendoSav != "nadando"){
-					assemblySTA("walk");
-				}
+				
 			}
 			else if(Controule.Botoeses[1].ativo){//⬆
-				personagemAtual.ser.direcao = 3
-				personagemAtual.ser.andar("z");
-				personagemAtual.ser.WorldPos.z-=personagemAtual.ser.velocity.z;
-				if( checkPontoCentral() == false){
-					personagemAtual.ser.pontoCentral[1]-=personagemAtual.ser.velocity.z;
-				}
-				if(fazendoSav != "pulando" || fazendoSav != "nadando"){
-					assemblySTA("walk");
-				}
+				personagemAtual.direcao = 3;
+				personagemAtual.pol = -1;
+				personagemAtual.andar("z");
 				
 			}
 			else if(Controule.Botoeses[2].ativo){ //➡
-				personagemAtual.ser.direcao = 2
+				personagemAtual.direcao = 2
+				personagemAtual.pol = 1;
+				personagemAtual.andar("x");
 				
-				personagemAtual.ser.andar("x");
-				
-				personagemAtual.ser.WorldPos.x+=personagemAtual.ser.velocity.x;
-				if( checkPontoCentral() == false){
-					personagemAtual.ser.pontoCentral[0]+=personagemAtual.ser.velocity.x;
-				}
-				if(fazendoSav != "pulando" || fazendoSav != "nadando"){
-					assemblySTA("walk");
-				}
 			}
 			else if(Controule.Botoeses[3].ativo){//⬇
-				personagemAtual.ser.direcao = 1
+				personagemAtual.direcao = 1
+				personagemAtual.pol = 1;
+				personagemAtual.andar("z");
 				
-				personagemAtual.ser.andar("z");
-				personagemAtual.ser.WorldPos.z+=personagemAtual.ser.velocity.z;
-				if( checkPontoCentral() == false){
-					personagemAtual.ser.pontoCentral[1]+=personagemAtual.ser.velocity.x;
-				}
-				if(fazendoSav != "pulando" || fazendoSav != "nadando"){
-					assemblySTA("walk");
-				}
 			}
 			else if(Controule.Botoeses[4].ativo){ //↙
-				personagemAtual.ser.direcao = 8;
-				personagemAtual.ser.andar("x");
-				personagemAtual.ser.andar("z");
+				personagemAtual.direcao = 8;
+				personagemAtual.pol = -0.7;
+				personagemAtual.andar("x");
+				personagemAtual.pol = 0.7;
+				personagemAtual.andar("z");
 				
-				personagemAtual.ser.WorldPos.z+=personagemAtual.ser.velocity.z;
-				personagemAtual.ser.WorldPos.x-=personagemAtual.ser.velocity.x;
-						
-				if( checkPontoCentral() == false){
-						personagemAtual.ser.pontoCentral[0]-=personagemAtual.ser.velocity.x;
-						personagemAtual.ser.pontoCentral[1]+=personagemAtual.ser.velocity.x;
-				}
-				if(fazendoSav != "pulando" || fazendoSav != "nadando"){
-					assemblySTA("walk");
-				}
 			}
 			else if(Controule.Botoeses[5].ativo){ //↘
-				personagemAtual.ser.direcao = 5
-				personagemAtual.ser.andar("x");
-				personagemAtual.ser.andar("z");
-					
-				personagemAtual.ser.WorldPos.z+=personagemAtual.ser.velocity.z;
-				personagemAtual.ser.WorldPos.x+=personagemAtual.ser.velocity.x;
-				if( checkPontoCentral() == false){
-					personagemAtual.ser.pontoCentral[0]+=personagemAtual.ser.velocity.x;
-					personagemAtual.ser.pontoCentral[1]+=personagemAtual.ser.velocity.z;
-				}
-				if(fazendoSav != "pulando" || fazendoSav != "nadando"){
-					assemblySTA("walk");
-				}
+				personagemAtual.direcao = 5
+				personagemAtual.pol = 0.7;
+				personagemAtual.andar("x");
+				personagemAtual.pol = 0.7;
+				personagemAtual.andar("z");
+				
 			}
 			else if(Controule.Botoeses[6].ativo){ //↗
-				personagemAtual.ser.direcao = 6
-				personagemAtual.ser.andar("x");
-				personagemAtual.ser.andar("z");
-					personagemAtual.ser.WorldPos.z-=personagemAtual.ser.velocity.z;
-					personagemAtual.ser.WorldPos.x+=personagemAtual.ser.velocity.x;
-				if( checkPontoCentral() == false){
-					personagemAtual.ser.pontoCentral[0]+=personagemAtual.ser.velocity.x;
-					personagemAtual.ser.pontoCentral[1]-=personagemAtual.ser.velocity.z;
-				}
-				if(fazendoSav != "pulando" || fazendoSav != "nadando"){
-					assemblySTA("walk");
-				}
+				personagemAtual.direcao = 6
+				personagemAtual.pol = 0.7;
+				personagemAtual.andar("x");
+				personagemAtual.pol = -0.7;
+				personagemAtual.andar("z");
+				
 			}
 			else if(Controule.Botoeses[7].ativo){ //↖
-				personagemAtual.ser.direcao = 7
-				personagemAtual.ser.andar("x");
-				personagemAtual.ser.andar("z");
-					personagemAtual.ser.WorldPos.z-=personagemAtual.ser.velocity.z;
-					personagemAtual.ser.WorldPos.x-=personagemAtual.ser.velocity.x;
-				if( checkPontoCentral() == false){
-					personagemAtual.ser.pontoCentral[0]-=personagemAtual.ser.velocity.x;
-					personagemAtual.ser.pontoCentral[1]-=personagemAtual.ser.velocity.z;
-				}
-				if(fazendoSav != "pulando" || fazendoSav != "nadando"){
-					assemblySTA("walk");
-				}
+				personagemAtual.direcao = 7
+				personagemAtual.pol = -0.7;
+				personagemAtual.andar("x");
+				personagemAtual.pol = -0.7;
+				personagemAtual.andar("z");
+				
 			}
 			else{
-				personagemAtual.ser.parar();
+				personagemAtual.parar("x");
+				personagemAtual.parar("z");
 			}
 			
-			if(Controule.Botoeses[8].ativo && personagemAtual.ser.onGround == true && controlState.B == false){//pulo
-				personagemAtual.ser.velocity.y += personagemAtual.ser.JPOW;
+			if(Controule.Botoeses[8].ativo && personagemAtual.onGround == true && controlState.B == false){//pulo
+				personagemAtual.velocity.y += personagemAtual.JPOW;
+			}
+			else if(!Controule.Botoeses[8].ativo && !personagemAtual.onGround && !personagemAtual.pulando && controlState.B){//pulo
+				personagemAtual.velocity.y = 0;
+				personagemAtual.pulando = true;
 			}
 			if(Controule.Botoeses[9].ativo){ //Y ataque base
-				/*
-				if(personagemAtual.pulando == true){
-					
+				if(!personagemAtual.onGround && personagemAtual.habilidades.includes("dashDive")){
+					personagemAtual.executarHabilidade("dashDive");
+					personagemAtual.atacar();
 				}
 				else{
-					personagemAtual.ser.atacar();
+					personagemAtual.atacar();
 				}
-				*/
 			}
-			if(Controule.Botoeses[10].ativo && controlState.A == false){ //A interação
+			if(Controule.Botoeses[10].ativo && controlState.A == false && col.interagir(personagemAtual)){ //A interação
 				/*
 				if(interagivel === true){
 					//procurar personagem que fala ()
