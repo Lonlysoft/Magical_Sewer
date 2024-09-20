@@ -6,16 +6,13 @@
 		<meta name = "viewport" content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 		<title> Magical Sewer </title>
 		<link rel = "icon" type = "image/x-icon" href = "src/favicon/magical_sewer_icon_.png">
+		<link rel = "stylesheet" href = "UIs.css"/>
+		<link rel = "stylesheet" href = "animation.css"/>
 		<style>
 			@font-face{
 				font-family: "classicalComic";
 				src: local("ClassicComic"), local("classic comic w01 regular"),
 				url("src/Letras/ClassicComicRegular.ttf") format('truetype');
-			}
-			@font-face{
-				font-family: "dragonQuest";
-				src: local("dragon-quest-ds"), local("Dragon Quest (DS) Regular"),
-				url("src/Letras/dragon-quest-ds.ttf") format('truetype');
 			}
 			@font-face{
 				font-family: "kindSans";
@@ -29,24 +26,33 @@
 					background-position: 400px 400px;
 				}
 			}
+			.assets{
+				display: none;
+			}
+			.assets img{
+				display: none;
+			}
 			@media only screen and (orientation: landscape){
 				#controles_cheroso {
 					position: absolute;
 					left: 50%;
 					top: 50%;
 					transform: translate(-50%, -50%);
-					z-index: 5;
+					z-index: 6;
 					max-width: 100%; /* Cobrir a largura da tela */
 					max-height: 100%; /* Cobrir a altura da tela */
 				}
 				body {
 					margin: 0;
-					
 					background-color: #00004f;
 				}
-		
-				.gameScreen {
-					border-radius: 20px;
+				.assets{
+					display: none;
+				}
+				.assets img{
+					display: none;
+				}
+				.gameScreen , .inGameUI{
 					position: absolute;
 					aspect-ratio: 1/1;
 					left: 50%;
@@ -63,10 +69,13 @@
 		
 				#transicoes {
 					
-					z-index: 3;
+					z-index: 5;
 				}
 		
 				#HUD {
+					z-index: 3;
+				}
+				.inGameUI{
 					z-index: 4;
 				}
 				.alerta{
@@ -76,7 +85,11 @@
 					display: none;
 				}
 			}
+			
 			@media only screen and (orientation: portrait){
+				.inGameUI{
+					display: none;
+				}
 				#controles_cheroso {
 					display: none;
 				}
@@ -92,8 +105,8 @@
 					align-items: center;
 					animation: pattern01Move 10s linear infinite;
 					overflow: hidden;
-					width:100vw;
-					height: 100vh;
+					width:100dvw;
+					height: 100dvh;
 				}
 				.alerta{
 					width: 80%;
@@ -122,30 +135,85 @@
 					height: 20vw;
 				}
 			}
+			
 		</style>
 	</head>
-	<body onload = "GameBonanza()" >
+	<body onload = "GameBonanza()" id = "body">
 		<canvas class = "gameScreen" id= "cenario"></canvas>
 		<canvas class= "gameScreen" id = "personagens"></canvas>
 		<canvas class = "gamescreen" id = "transicoes"></canvas>
 		<canvas class = "gameScreen" id="HUD"></canvas>
+		
+		<div class = "assets">
+			<canvas id = "processing"></canvas>
+			<!-- icones -->
+			<img class = "iconGuaxo" src = "src/imagens/GuaxoIcone01.png">
+			<img class = "iconGuaxoBlink" src = "src/imagens/GuaxoIcone02.png">
+			<img class = "iconRaty" src = "src/imagens/Raty01.png">
+			<img class = "iconRatyBlink" src = "src/imagens/Raty02.png">
+			<img class = "iconDante" src = "src/imagens/Danteicon.png">
+			<img class = "iconDanteBlink" src = "src/imagens/Danteicon2.png">
+			<img class = "imgLogotype2" src = "src/imagens/lsft.png">
+			<img class = "imgLogotype1" src = "src/imagens/Vynny_Logotype.png">
+			
+			<img class = "transition__star" src = "src/imagens/EstrelaTransit.png">
+			<img class = "transition__ball" src = "src/imagens/BolaTransicao.png">
+			
+			<!-- instruções -->
+			<img class = "cmd" src = "src/imagens/instrussao1.png">
+			<img class = "cmd2" src = "src/imagens/instrussao2.png">
+			
+			<!-- Game World Graphics -->
+			<img id = "Guaxo" src = "src/imagens/guaxo_complete.png">
+			<img class = "tilemap" src = "src/imagens/tileMap.png">
+			<img class = "titulo" src = "src/imagens/magicalTitle__beta.png">
+		</div>
+		<div class = "inGameUI">
+			<div class = "HUD">
+				<div class = "charWin glassy">
+					<img class = "imgIcon" src = "src/favicon/magical_sewer_icon_.png">
+					<div class = "quickStats">
+						<div class = "HUD__barraDeVida"><div class = "charWin__HPbar"></div></div>
+						<div class = "nomePersonagem">Guaxo</div>
+					</div>
+				</div>
+				<section class = "pauseMenu glassy">
+					<div class = "it pauseMenu__item"></div>
+					<div class = "it pauseMenu__talkTo"></div>
+					<div class = "it pauseMenu__look"></div>
+					<div class = "it pauseMenu__stats"></div>
+				</section>
+				
+				<!--
+				<section class = "outConfig glassy">
+					<div class = "outConfig__fullscreen"></div>
+				</section>
+				-->
+			</div>
+		</div>
+		<div class = "cinema"><div class = "cinema__alphaLock"></div></div>
 		<canvas id="controles_cheroso"></canvas>
+		
 		<!--gráficos-->
 		<div class = "alerta">
 				Impossivel usar o modo retrato!
-				<svg class = "instrucao" width="800px" height="800px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs><style>.a{fill:none;stroke:#fff;stroke-linecap:round;stroke-linejoin:round;}</style></defs><path class="a" d="M23.2711,2.5133A21.5,21.5,0,0,1,45.3607,21.38"/><path class="a" d="M24.3967,45.4967A21.5,21.5,0,0,1,2.6393,26.2472"/><path class="a" d="M19.0507,5.0567,42.7424,28.7882a.7225.7225,0,0,1-.029,1.0207L29.4983,43.0019a.7225.7225,0,0,1-1.0207.0272L4.7858,19.2976a.7225.7225,0,0,1,.029-1.0206L18.03,5.084A.7227.7227,0,0,1,19.0507,5.0567Z"/><path class="a" d="M23.2711,2.5133l6.19,6.4112L32.9614,4.447"/><path class="a" d="M24.3967,45.4967l-6.6711-6.1641-3.2489,3.9326"/></svg>
+				<svg class = "instrucao" xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 -960 960 960" width="48px" fill="#e8eaed"><path d="M501-90 128-462h86l330 330 246-246H652v-60h240v240h-60v-138L586-90q-17.38 17-42.69 17T501-90ZM68-522v-240h60v138l246-246q17.38-17 42.69-17T459-870l373 372h-86L416-828 170-582h138v60H68Z"/></svg>
 				
 		</div>
 	</body>
 	<script src = "controls_mg_sew.js"></script>
+	<script src = "gameTools.js"></script>
 	<script src = "maps_mgSew.js"></script>
 	<script src = "mapa_assets.js"></script>
 	<script src = "Char.js"></script>
 	<script src = "char_assets.js"></script>
 	<script src = "dialogs.js"></script>
+	<script src = "NPCs.js"></script>
 	<script src = "UI.js"></script>
 	<script src = "backgrounds.js"></script>
 	<script src = "cenery.js"></script>
 	<script src = "collisions.js"></script>
-	<script src = "Kill_myself.js"></script>
+<!--	<script src = "dayAndNightCicle.js"></script> -->
+	<script src = "debug.js"></script> <!-- script temporario n faca mudancas por aqui-->
+	<script src = "main.js"></script>
 </html>

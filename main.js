@@ -7,8 +7,8 @@ var upper = 0
 var oppaciter = 0
 var k = 0
 var graviter = 0;
-var fazendoSav = "still";
 var guaxo_sta_process = 0
+var inimigosForamCarregados = false;
 var demandarTransicao = true
 
 const CentroDaTela = [canvas.width/2, canvas.height/2]
@@ -16,6 +16,10 @@ const CentroDaTela = [canvas.width/2, canvas.height/2]
 //limpar a tela
 function limpar(contexto){
 	contexto.clearRect(0, 0, 1000, 1000)
+}
+function zerar(contexto){
+	contexto.fillStyle = "#000"
+	contexto.fillRect(-1000, -1000, 2000, 2000);
 }
 
 /*---- M A I N ----*/
@@ -29,6 +33,12 @@ function GameBonanza(){
 	else{
 		//eu entendi. você pode deixar eventos e coisas assim fora do definir intervalo (loop do jogo). assim o código fica um pouco mais limpo... e com uma performance melhorada. tendo em vista que ele não irá adicionar um escutador de eventos todo quadro novo 
 		//adicione aq o event listener para keyBoard controls (é um if...else tá?)
+		//na verdade é mais simples de fazer de outra forma.
+		//EventoDeTeclado
+		let date = new Date().getHours();
+		let body = document.getElementById("body");
+		if(date == 17 && body.style.backgroundImage != "")
+			body.style.backgroundImage = "url('src/imagens/sunset.png')";
 		EventoDeToq();
 		window.addEventListener("resize", resize);
 		resize();
@@ -39,8 +49,8 @@ function GameBonanza(){
 
 var interac1 = 0;
 var interac2 = 0;
-var scrnAppear = false
-
+var scrnAppear = false;
+var personagemSelecionado = 0;
 
 //saving issues
 var GameMoment = 2;//são o codigo salas do game, cada um tem um.
@@ -50,7 +60,7 @@ function GamePlay(){
 	limpar(ctx);
 	limpar(controls_ctx);
 	limpar(HUD_ctx);
-	limpar(ctx_BG);
+	zerar(ctx_BG);
 	limpar(ctx_Tr);
 	if(GameMoment != 4 && controls_canvas.width < controls_canvas.height){
 		GameMomentSav = GameMoment;
@@ -154,46 +164,59 @@ function GamePlay(){
 			if(gameFeature.pause == false){
 				GameMoment = GameMomentSav;
 			}
+			UI.pausing();
+			UI.endQuickStarting();
 			break;
 			
 		case 2:
-			//o jogo principal
-			if(gameFeature.pause == true){
+			//o jogo principal 
+			if(gameFeature.pause){
 				GameMomentSav = GameMoment;
 				GameMoment = 9999;
 			}
-			if(scenery.hasDeclaired == false){
+			if(!scenery.hasDeclaired){
 				scenery.declair("ftest");
-				assemblyCharacter(Guaxo.ID);
+				personagemAtual = personagens[personagemSelecionado];
 			}
-			if(personagemAtual.ser.onSpawn == false && scenery.hasDeclaired == true){
-				personagemAtual.ser.onSpawn = personagemAtual.ser.spawn();
+			if(!inimigosForamCarregados){
+				carregarInimigos();
+				inimigosForamCarregados = true;
 			}
-			if(demandarTransicao == true){
+			if(!personagemAtual.isSpawn && scenery.hasDeclaired){
+				personagemAtual.isSpawn = personagemAtual.spawn();
+			}
+			if(demandarTransicao){
 				transicaoDeTela("vindo", 0.1);
 				if(alfa <= 0){
 					demandarTransicao = false;
 				}
 			}
+			
 			checarEntidades(arrayDeInimigos);
 			adicionarImigos();
+			
 			scenery.desenhar();
+			handlePlat();
 			for(let i = 0; i < arrayDeInimigos.length; i++){
 				arrayDeInimigos[i].update();
-				colisionar(arrayDeInimigos[i]);
+				colisionar(arrayDeInimigos[i], i);
 				handleYcoords(arrayDeInimigos[i]);
+				col.handleShadowCoords(arrayDeInimigos[i]);
 			}
 			desenharBotoes(Controule.Botoeses);
 			action("personagem");
 			
-			personagemAtual.ser.update();
-			colisionar(personagemAtual.ser);
-			handleYcoords(personagemAtual.ser);
+			personagemAtual.update();
+			colisionar(personagemAtual);
+			col.handleShadowCoords(personagemAtual);
+			handleYcoords(personagemAtual);
 			handleOld();
 			controlState_save();
-			Camera.moverPara(personagemAtual.ser.WorldPos.x, personagemAtual.ser.WorldPos.z, personagemAtual.ser.WorldPos.y);
+			Camera.moverPara(personagemAtual.WorldPos.x, personagemAtual.WorldPos.z, personagemAtual.WorldPos.y);
 			
 			debugForMain();
+			UI.endPausing();
+			UI.quickStating();
 		break;
 			
 		case 3:
