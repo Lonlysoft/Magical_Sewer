@@ -1,12 +1,12 @@
 var Camera = {
-	x: 100, y: 100, z: 0, w: 600, h: 600,
+	x: 100, y: 100, z: 0, w: 700, h: 600,
 	moverPara: function(x, y, z){
 		this.x = x - this.w*0.5;
 		this.y = y - z - this.h*0.5;
 		this.z = z;
 		
-		//this.x += (x - this.x - this.w*0.5)*0.9; 
-		//this.y += (y - z - this.y - this.h*0.5)*0.9;
+//		this.x += (x - this.x - this.w*0.5)*0.9; 
+		//this.y += (y - this.y - this.h*0.5)*0.9 - z;
 		
 	}
 };
@@ -25,34 +25,38 @@ class Box{
 	}
 }
 
-class Coin{
+class Coin extends Box{
 	constructor(x, y, z, value){
-		this.col = new Box(x, y, z, 10, 20, 5);
+		super(x, y, z, 10, 10, 10);
 		this.isCollected = false;
-		this.pontoCentral = new Array(2);
+		this.pontoDaTela = new Array(2)
 		this.velocity = {x: 0, y: 0, z: 0};
 		this.friction = 0.9;
-		this.tipo = "coletavel"
+		this.tipo = "moeda"
 		this.valor = value;
+		this.visivel = false;
+		this.shadow = {
+			x: this.x, y: this.y+this.z, w: this.w, h: this.p+this.h
+		};
 	}
 	desenhar(){
-		ctx.fillStyle = "#777"
-		ctx.fillRect(this.pontoCentral[0], this.pontoCentral[1], this.col.w, this.col.h);
+		ctx.fillStyle = "#fff"
+		ctx.fillRect(this.pontoDaTela[0], this.pontoDaTela[1], this.w, this.h);
 	}
 	update(){
-		this.pontoCentral[0] = WorldToScreen1D(-20 + this.boxCol.x, Camera.x);
-		this.pontoCentral[1] = WorldToScreen1D(-20 + this.boxCol.z - this.boxCol.y, Camera.y);
-		this.col.x += this.velocity.x;
-		this.col.z += this.velocity.z;
+		this.pontoDaTela[0] = WorldToScreen1D(this.x, Camera.x);
+		this.pontoDaTela[1] = WorldToScreen1D(this.z - this.y, Camera.y);
+		this.x += this.velocity.x;
+		this.z += this.velocity.z;
 		this.velocity.z *= this.friction;
 		this.velocity.x *= this.friction;
 	}
 	//quando coletada o contador irà ser += this.valor
 }
 
-class Coletavel{
+class Coletavel extends Box{
 	constructor(ID, x, y, z, w, h, p, tipo){
-		this.col = new Box(x, y, z, w, h, p);
+		super(x, y, z, w, h, p);
 		this.tipo = tipo;
 		this.ID = ID;
 	}
@@ -129,10 +133,9 @@ function handlePlat(){
 		estruturasAtivas[i].update();
 		estruturasAtivas[i].desenhar();
 		estruturasBox = [estruturasAtivas[i].x, estruturasAtivas[i].z, estruturasAtivas[i].w, estruturasAtivas[i].p]
-		if(!col.AABB(estruturasBox, cameraBox)){
-			//remover a plataforma... na verdade o plano é trocar a plataforma de lugar pro fim da lista e poppar ela.
+		if(!col.AABB(estruturasBox, cameraBox) || estruturasAtivas[i].visivel == false){
 			estruturasAtivas[i].visivel = false;
-			trocador = estruturasAtivas[estruturasBox.length-1];
+			trocador = estruturasAtivas[estruturasAtivas.length-1];
 			estruturasAtivas[estruturasAtivas.length-1] = estruturasAtivas[i];
 			estruturasAtivas[i] = trocador;
 			estruturasAtivas.pop();

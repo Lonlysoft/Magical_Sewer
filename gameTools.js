@@ -9,6 +9,14 @@ function GridToWorld(gridAx, tileSize) {
   return gridAx * tileSize;
 }
 
+function maxVal(arr) {
+  let o = 0;
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i] > o) o = arr[i];
+  }
+  return o;
+}
+
 function WorldToScreen1D(entCoord, camWCoord) {
   let screenCoord = entCoord - camWCoord;
   return screenCoord;

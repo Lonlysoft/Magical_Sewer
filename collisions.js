@@ -13,14 +13,6 @@ function handleOld(){
 	}
 }
 
-function maxVal(arr){
-	let o = 0;
-	for(let i = 0; i < arr.length; i++){
-		if(arr[i] > o) o = arr[i];
-	}
-	return o;
-}
-
 const col = {
 	AABB: function(retangulo1, retangulo2){
 		return retangulo1[0] + retangulo1[2] >= retangulo2[0] &&
@@ -83,12 +75,13 @@ const col = {
 		}
 	},
 	
-	coletavel: function(entity, coin){
+	moeda: function(entity, coin){
 		let entityBox = [entity.boxCol.x, entity.boxCol.z, entity.boxCol.w, entity.boxCol.p];
-		let coinBox = [coin.col.x, coin.col.z, coin.col.w, coin.col.p];
-		if(AABB(entityBox, coinBox) && entity.boxCol.y <= coin.y && entity.boxCol.y >= (coin.y + coin.h) ){
-			entity.money+=coin.col.value;
-			
+		let coinBox = [coin.x, coin.z, coin.w, coin.p];
+		if(this.AABB(entityBox, coinBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, coin.y)){
+			coin.visivel = false;
+			coin.isCollected = true;
+			entity.money+=coin.value;
 		}
 	},
 	
@@ -290,6 +283,7 @@ const col = {
 		if(entity.boxCol.y < cube.y && entity.boxCol.oldY >= cube.y){
 			entity.velocity.y = 0;
 			entity.boxCol.y = cube.y + cube.h + MAGIC_OFFSET;
+			entity.onGround = true;
 			return true;
 		}
 	},
@@ -298,6 +292,7 @@ const col = {
 		if(entity.boxCol.y > cube.y && entity.boxCol.oldY <= cube.y){
 			entity.velocity.y = 0;
 			entity.boxCol.y = cube.y - entity.boxCol.h - MAGIC_OFFSET;
+			
 			return true;
 		}
 	},
@@ -409,10 +404,10 @@ function colisionar(entity, num = -1){
 	//comparar colisoes com as plataformas
 	let estruturasBox;
 	for(let i = 0; i < estruturasAtivas.length; i++){
-			estruturasBox = [estruturasAtivas[i].x, estruturasAtivas[i].z, estruturasAtivas[i].w, estruturasAtivas[i].p];
-			if(col.AABB(playerBoxCol, estruturasBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, estruturasAtivas[i].y) && !isBellowGround(entity.boxCol.y, estruturasAtivas[i].y + estruturasAtivas[i].h)){
-				 col[estruturasAtivas[i].tipo](entity, estruturasAtivas[i]);
-			}
+		estruturasBox = [estruturasAtivas[i].x, estruturasAtivas[i].z, estruturasAtivas[i].w, estruturasAtivas[i].p];
+		if((col.AABB(playerBoxCol, estruturasBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, estruturasAtivas[i].y)) || (col.AABB(playerBoxCol, estruturasBox) && isBellowGround(entity.boxCol.y, estruturasAtivas[i].y + estruturasAtivas[i].h))){
+			 col[estruturasAtivas[i].tipo](entity, estruturasAtivas[i]);
+		}
 	}
 	
 	
@@ -440,8 +435,10 @@ function isOnGround(entitY, struturY){
 	return entitY <= struturY;
 }
 
+
+//lembre-se de que esse contexto é especifico.
 function isBellowGround(entitY, structurY){
-	return entitY < structurY;
+	return entitY >= structurY;
 }
 
 function currGroundConjunct(entity, arr, curr){
@@ -455,25 +452,6 @@ function currGroundConjunct(entity, arr, curr){
 		}
 	}
 	return curr;
-}
-
-function isBellowGroundConjunct(entity, arr){
-	etiArray = [entity.boxCol.x, entity.boxCol.z, entity.boxCol.w, entity.boxCol.p];
-	for(let i = 0; i < arr.length; i++){
-		arrArr = [arr[i].x, arr[i].z, arr[i].w, arr[i].p];
-		if(col.AABB(etiArray, arrArr)){
-			if(isOnGround(entity.WorldPos.y, arr[i].y) && !isBellowGround(entity.WorldPos.y, arr[i].y + arr[i].h)){
-				return false;
-			}
-			else if(isBellowGround(entity.WorldPos.y, arr[i].y + arr[i].h)){
-				console.log("6")
-				return true;
-			}
-			else {
-				return true;
-			}
-		}
-	}
 }
 
 function handleYcoords(entity){

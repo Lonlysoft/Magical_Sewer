@@ -53,7 +53,7 @@ var scrnAppear = false;
 var personagemSelecionado = 0;
 
 //saving issues
-var GameMoment = 2;//são o codigo salas do game, cada um tem um.
+var GameMoment = -3;//são o codigo salas do game, cada um tem um.
 var GameMoment_Sav = 0;
 // modular o frame
 function GamePlay(){
@@ -128,14 +128,14 @@ function GamePlay(){
 				desenharBotoes(Controule.Botoeses)
 				//adicionar musica
 				action("start");
-				escreva("Lonlysoft 2024", 25, canvas.height - 40);
 				if(demandarTransicao == true && scrnAppear){
 					transicaoDeTela("indo", 0.1);
 					if(alfa >= 1){
 						alfa = 1;
 						GameMomentSav = 2;
 						GameMoment = 2;
-						scrnAppear = false
+						scrnAppear = false;
+						UI.dismissTelaTitulo();
 					}
 				}
 			break;
@@ -147,7 +147,6 @@ function GamePlay(){
 			break;
 			
 		case 9999:
-			cursor.max = PauseMenu.numDeOpcoes;
 			//menu de pausa
 			scenery.desenhar()
 			
@@ -157,7 +156,6 @@ function GamePlay(){
 			HUD_ctx.globalAlpha = 1;
 			
 			//PauseMenu.draw(canvas.width/2, canvas.height/2);
-			escreva("pausa", canvas.width*0.5-24, canvas.height*0.5-8)
 			desenharBotoes(Controule.Botoeses);
 			action("pause");
 			controlState_save();
@@ -221,8 +219,7 @@ function GamePlay(){
 			
 		case 3:
 			//tela de selecionar os personagens
-			UI.charSelectionScreen();
-			EventoDeToq();
+			UI.startCharactering();
 			desenharBotoes(Controule.Botoeses);
 			if(demandarTransicao == true){
 				if(alfa <= 0){
@@ -232,7 +229,7 @@ function GamePlay(){
 					transicaoDeTela("vindo", 0.1);
 				}
 			}
-			action("SLCT", "vert", 3);
+			action("SLCT", "horiz", 3);
 			break;
 		case 4: //sleep mode 
 			if(controls_canvas.width >= controls_canvas.height){
@@ -240,6 +237,9 @@ function GamePlay(){
 			}
 		break;
 		
+		case 5: //select File 
+			//aqui vão ter: novo jogo e carregar: por cookies, por browser data ou por upload de arquivo
+		break;
 		default:
 			GameMoment = 1;
 			break;

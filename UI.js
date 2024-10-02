@@ -2,34 +2,22 @@ var HUD_canvin = document.getElementById("HUD");
 var HUD_ctx = HUD_canvin.getContext("2d");
 HUD_canvin.width = 520;
 HUD_canvin.height = 520;
- 
-
-const cursor = {
-	x: undefined,
-	y: undefined,
-	altura: 40,
-	largura: 50,
-	opcao: 1,
-	graphic: document.querySelector(".imgCursor"),
-	desenhar: function(x_3, y_3){
-		this.x = x_3;
-		this.y = y_3;
-		HUD_ctx.drawImage(this.graphic, this.x, this.y, this.altura, this.largura);
-	},
-	max: 4
-}
-
 
 const UI = {
-	titleDOM: document.querySelector(".titulo"),
+	titleDOM: document.querySelector(".titleScreen"),
+	charsDOM: document.querySelector(".container__selectCharacters"),
+	isCharSelectHere: false,
 	isTitleHere: false,
 	isInventoryHere: false,
-	HUD_HP: document.querySelector(".charWin"),
-	HP_bar: document.querySelector(".charWin__HPbar"),
-	pause: document.querySelector(".pauseMenu"),
+	isInventaring: false,
 	isQuickStatsHere: false,
 	isCharAtualizou: false,
 	isPausing: false,
+	HUD_HP: document.querySelector(".charWin"),
+	HP_bar: document.querySelector(".charWin__HPbar"),
+	pause: document.querySelector(".pauseMenu"),
+	pauseItem: document.getElementsByClassName("it"),
+	inventario: document.querySelector(".inventario"),
 	quickStating: function(){
 		if(!this.isQuickStatsHere){
 			this.HUD_HP.style.display = "flex";
@@ -59,31 +47,48 @@ const UI = {
 			this.isPausing = false;
 		}
 	},
+	startInventario: function(entity_bag){
+		if(!this.isInventaring){
+			this.inventario.style.display = "flex";
+			let inventStr = "";
+			for(let i = 0; i < entity_bag.length; i++){
+				inventStr += '<div class = "inventItem">' + personagemAtual.calda[i] + '</div>';
+			}
+			this.inventario.innerHTML = inventStr;
+			this.isInventaring = true;
+		}
+	},
+	endInventario: function(){
+		if(this.isInventaring){
+			this.inventario.style.display = "none";
+			this.isInventaring = false;
+		}
+	},
+	
 	TelaTitulo: function(){
-		ctx.drawImage(this.titleDOM, canvas.width*0.5-this.titleDOM.width*0.5, canvas.height*0.5-this.titleDOM.height*0.5);
-	},
-	abrirInventario(entity_bag){
-		//pesquisar possibilidade de adicionar e remover itens aqui (talvez possamos pegar inspiração de uma to-do list)
-		if(!isInventoryHere){
-			
+		if(!this.isTitleHere){
+			this.titleDOM.style.display = "flex";
+			this.isTitleHere = true;
 		}
 	},
-	charSelectionScreen(){
-		ctx.fillStyle = "#195B8F"
-		ctx.fillRect(0, 0, 520, 520)
-		ctx.drawImage(comando[1], 50, 0, 420, 154)
-		ctx.globalAlpha = 0.25
-		ctx.drawImage(sombra, canvas.width/2-100, canvas.height - 100, 200, 46)
-		ctx.globalAlpha = 1
-		if(frame == 1 || frame == 2 || frame == 3){
-			ctx.drawImage(icons.guaxo[1], canvas.width/4-100, canvas.height/2-100, 170, 170);
-			//ctx.drawImage(icons.raty[1], 8 + canvas.width/4+canvas.width/4-100, canvas.height/2-100, 200, 200);
-			ctx.drawImage(icons.dante[1], 8+canvas.width/4+canvas.width/4+canvas.width/4-100, 10+canvas.height/2-100, 150, 150)
+	dismissTelaTitulo: function(){
+		if(this.isTitleHere){
+			this.titleDOM.style.display = "none";
+			this.isTitleHere = false;
 		}
-		else{
-			ctx.drawImage(icons.guaxo[0], canvas.width/4-100, canvas.height/2-100, 170, 170)
-			//ctx.drawImage(icons.raty[0], 8 + canvas.width/4+canvas.width/4-100, canvas.height/2-100, 200, 200);
-			ctx.drawImage(icons.dante[0], 8 + canvas.width/4+canvas.width/4+canvas.width/4-100, 10+canvas.height/2-100, 150, 150)
+	},
+	startCharactering(){
+		if(!this.isCharSelectHere){
+			this.charsDOM.classList.add("flex-center");
+			this.charsDOM.classList.remove("notHere");
+			this.isCharSelectHere = true;
+		}
+	},
+	endCharactering(){
+		if(this.isCharSelectHere){
+			this.charsDOM.classList.remove("flex-center");
+			this.charsDOM.classList.add("notHere");
+			this.isCharSelectHere = false;
 		}
 	},
 	HUD: function(){
@@ -103,19 +108,8 @@ const UI = {
 		}
 		let pontosStr = personagemAtual.ser.xp + "";
 		escreva(pontosStr, HUD_canvin.width - 100, HUD_canvin.height - 115);
-		escreva("Guaxo", HUD_canvin.width - 110, 115);
-		ctx.fillStyle = "#white"
-		ctx.fillRect(this.lifeBar.borderX, this.lifeBar.borderY, this.lifeBar.borderW, this.lifeBar.borderH);
-		ctx.fillRect(this.lifeBar.borderX+this.lifeBar.padding, this.lifeBar.borderYthis.lifeBar.padding, this.lifeBar.borderW-(this.lifeBar.padding*2), this.lifeBar.borderH-(this.lifeBar.padding*2));
-		ctx.fillRect(this.lifeBar.borderX+this.lifeBar.padding, this.lifeBar.borderYthis.lifeBar.padding, hpPraRenderizar, this.lifeBar.borderH-(this.lifeBar.padding*2));
 	}
 }
-
-const numeroVida = document.querySelector(".imgNumVida");
-
-const numeroPontos = document.querySelector(".imgNumPontos");
-
-const janelaDeStatus = document.querySelector(".imgJanela");
 
 //coordenadas de imagem para os numeros do HP
 
@@ -131,60 +125,28 @@ var escala = 2;
 const PauseMenu = {
 	camadas: 0,
 	raioDoMenu: 30,
-	numDeOpcoes: 7,
+	numDeOpcoes: 4,
 	raioParaAnim: 0,
-	animationDone: false,
-	hasSeparated: false,
-	padding: 7,
-	grausSeparacao: 0,
-	opcoes: ["falar", "items", "olhar", "equipar", "porta", "status"],
-	DimenDasBolas:[30, 30],
+	opcaoSelecionada: 0,
+	opcoes: ["falar", "items", "olhar", "status"],
 	
-	draw: function(x, y, raio = this.raioDoMenu){
-		x -= canvas.width/2 - this.padding*(Math.floor(this.numDeOpcoes/2)) - this.DimenDasBolas[0]*(Math.floor(this.numDeOpcoes/2));
-		if(this.hasSeparated == false){
-			this.hasSeparated = true;
-		}
-		fale(this.opcoes[cursor.opcao - 1], 30, y - 60, 38, "purple")
-		for(let i = 0; i < this.numDeOpcoes; i++){
-			x += this.padding+this.DimenDasBolas[0];
-			
-			if(i == cursor.opcao - 1) HUD_ctx.fillStyle = "yellow";
-			else HUD_ctx.fillStyle = "purple";
-			
-			HUD_ctx.fillRect(x, y - this.raioDoMenu - this.DimenDasBolas[1]/2, this.DimenDasBolas[0], this.DimenDasBolas[1]);
-		}
+	falar(){
+		
 	},
-	vinheta: function(x,y,tipo){
-		switch(tipo){
-			case "ir":
-				this.raioParaAnim = 0;
-				if(this.raioParaAnim >= this.raioDaRoda){
-					this.raioParaAnim = 0;
-					this.animationDone = true;
-				}
-				else{
-					this.raioParaAnim++;
-				}
-				this.draw(x, y, this.raioParaAnim);
-			break;
-			
-			case "sair":
-				if(this.rqst == false){
-					this.raioParaAnim = this.raioDaRoda;
-					this.rqst = true;
-				}
-				if(this.raioParaAnim <= 0){
-					this.raioParaAnim = 0;
-					this.animationDone = true;
-					this.rqst = false;
-				}
-				else{
-					this.raioParaAnim--;
-				}
-				this.draw(x, y, this.raioParaAnim);
-				
-				break;
+	items(){
+		UI.startInventario(personagemAtual.calda);
+	},
+	status(){
+		UI.showStatus();
+	},
+	
+	avancarNaLayer(){
+		this[this.opcoes[this.opcaoSelecionada]]();
+	},
+	regredirNaLayer(){
+		if(this.camadas == -1){
+			this.camadas = 0;
+			gameFeature.pause = false;
 		}
 	}
 }

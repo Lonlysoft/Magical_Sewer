@@ -174,22 +174,25 @@ function action(type){
 				gameFeature.pause = false;
 			}
 			if(Controule.Botoeses[0].ativo && controlState.east == false){ //↖⬆↗
-				cursor.opcao--;
-				if(cursor.opcao < 1){
-					cursor.opcao = cursor.max;
-				}
+				UI.pauseItem[PauseMenu.opcaoSelecionada].classList.remove("selecionado");
+				PauseMenu.opcaoSelecionada--;
+				if(PauseMenu.opcaoSelecionada < 0) PauseMenu.opcaoSelecionada = 3;
+				UI.pauseItem[PauseMenu.opcaoSelecionada].classList.add("selecionado");
 			}
 			else if(Controule.Botoeses[2].ativo && controlState.west == false){ //↙⬇↘
-				cursor.opcao++
-				if(cursor.opcao > cursor.max){
-					cursor.opcao = 1;
-				}
+				UI.pauseItem[PauseMenu.opcaoSelecionada].classList.remove("selecionado");
+				PauseMenu.opcaoSelecionada++;
+				if(PauseMenu.opcaoSelecionada > 3) PauseMenu.opcaoSelecionada = 0;
+				UI.pauseItem[PauseMenu.opcaoSelecionada].classList.add("selecionado");
+				
 			}
 			else if(Controule.Botoeses[8].ativo && controlState.B == false){//B
 				gameFeature.camada--;
+				PauseMenu.regredirNaLayer();
 			}
 			else if(Controule.Botoeses[10].ativo && controlState.A == false){//A
 				gameFeature.camada++;
+				PauseMenu.avancarNaLayer();
 			}
 		break;
 		
