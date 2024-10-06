@@ -125,7 +125,7 @@ function GamePlay(){
 					}
 				}
 				UI.TelaTitulo()
-				desenharBotoes(Controule.Botoeses)
+				desenharBotoes(Controule.Botoeses, Controule.graph)
 				//adicionar musica
 				action("start");
 				if(demandarTransicao == true && scrnAppear){
@@ -156,7 +156,7 @@ function GamePlay(){
 			HUD_ctx.globalAlpha = 1;
 			
 			//PauseMenu.draw(canvas.width/2, canvas.height/2);
-			desenharBotoes(Controule.Botoeses);
+			desenharBotoes(Controule.Botoeses, Controule.graph);
 			action("pause");
 			controlState_save();
 			if(gameFeature.pause == false){
@@ -201,7 +201,7 @@ function GamePlay(){
 				handleYcoords(arrayDeInimigos[i]);
 				col.handleShadowCoords(arrayDeInimigos[i]);
 			}
-			desenharBotoes(Controule.Botoeses);
+			desenharBotoes(Controule.Botoeses, Controule.graph);
 			action("personagem");
 			
 			personagemAtual.update();
@@ -220,7 +220,7 @@ function GamePlay(){
 		case 3:
 			//tela de selecionar os personagens
 			UI.startCharactering();
-			desenharBotoes(Controule.Botoeses);
+			desenharBotoes(Controule.Botoeses, Controule.graph);
 			if(demandarTransicao == true){
 				if(alfa <= 0){
 					demandarTransicao = false;

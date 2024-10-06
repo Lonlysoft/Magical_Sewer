@@ -36,14 +36,14 @@
 				display: none;
 			}
 			@media only screen and (orientation: landscape){
-				#controles_cheroso {
+				.controles_cheroso {
 					position: absolute;
 					left: 50%;
 					top: 50%;
 					transform: translate(-50%, -50%);
 					z-index: 6;
 					max-width: 100%; /* Cobrir a largura da tela */
-					max-height: 100%; /* Cobrir a altura da tela */
+					min-height: 100%; /* Cobrir a altura da tela */
 				}
 				body {
 					margin: 0;
@@ -93,7 +93,7 @@
 				.inGameUI{
 					display: none;
 				}
-				#controles_cheroso {
+				.controles_cheroso {
 					display: none;
 				}
 				.gameScreen{
@@ -158,12 +158,10 @@
 			<img class = "imgLogotype2" src = "src/imagens/lsft.png">
 			<img class = "imgLogotype1" src = "src/imagens/Vynny_Logotype.png">
 			
+			<img class = "controles" src = "src/imagens/ctrls.png">
+			
 			<img class = "transition__star" src = "src/imagens/EstrelaTransit.png">
 			<img class = "transition__ball" src = "src/imagens/BolaTransicao.png">
-			
-			<!-- instruções -->
-			<img class = "cmd" src = "src/imagens/instrussao1.png">
-			<img class = "cmd2" src = "src/imagens/instrussao2.png">
 			
 			<!-- Game World Graphics -->
 			<img id = "Guaxo" src = "src/imagens/guaxo_complete.png">
@@ -228,8 +226,8 @@
 			</div>
 		</div>
 		<div class = "cinema"><div class = "cinema__alphaLock"></div></div>
-		<canvas class = "gamescreen" id = "transicoes"></canvas>
-		<canvas id="controles_cheroso"></canvas>
+		<canvas class = "gameScreen" id = "transicoes"></canvas>
+		<canvas class="controles_cheroso" id = "ctrl"></canvas>
 		
 		<!--gráficos-->
 		<div class = "alerta">
@@ -238,8 +236,8 @@
 				
 		</div>
 	</body>
-	<script src = "controls_mg_sew.js"></script>
 	<script src = "gameTools.js"></script>
+	<script src = "controls_mg_sew.js"></script>
 	<script src = "maps_mgSew.js"></script>
 	<script src = "mapa_assets.js"></script>
 	<script src = "Char.js"></script>

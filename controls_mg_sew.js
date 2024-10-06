@@ -1,57 +1,49 @@
-var controls_canvas = document.getElementById("controles_cheroso")
+var controls_canvas = document.getElementById("ctrl")
 var controls_ctx = controls_canvas.getContext("2d")
-controls_canvas.width = Math.floor(document.documentElement.clientWidth);
-controls_canvas.height = Math.floor(document.documentElement.clientHeight);
+var client_width = Math.floor(document.documentElement.clientWidth);
+var client_height = Math.floor(document.documentElement.clientHeight);
+
+controls_canvas.width = 800
+controls_canvas.height = 400
 
 var boundingRect = undefined
-var aspectRatio = undefined
+var aspectRatio = 1;
 
 function resize(){
-	controls_canvas.width = Math.floor(document.documentElement.clientWidth);
-	controls_canvas.height = Math.floor(document.documentElement.clientHeight);
-	// these next two lines are used for adjusting and scaling user touch input coordinates:
+	client_width = Math.floor(document.documentElement.clientWidth);
+	client_height = Math.floor(document.documentElement.clientHeight);
 	boundingRect = controls_canvas.getBoundingClientRect();
-	aspectRatio = controls_canvas.width / controls_canvas.height;
-	resize_ctrl(Controule.Botoeses);
+	aspectRatio = controls_canvas.width/client_width;
+	aspectRatioHeight = controls_canvas.height/client_height;
 }
 
-function resize_ctrl(ControuleBotoeses){
-	for(let i = 0; i < ControuleBotoeses.length; i++){
-		ControuleBotoeses[i].x = controls_canvas.width/18*ControuleBotoeses[i].OverPos.x;
-		ControuleBotoeses[i].y = controls_canvas.height/10*ControuleBotoeses[i].OverPos.y;
-	}	
-}
-
-
-function desenharBotoes(buttons){
+function desenharBotoes(buttons, graphic){
 	var button, index;
-	for (index = buttons.length - 1; index > -1; -- index) {
+	let onOrOff = 0;
+	for (index = buttons.length - 1; index > -1; --index) {
 		button = buttons[index]
 		if(buttons[index].tipo === "visivel"){
 			if(buttons[index].ativo === true){
-				controls_ctx.fillStyle = "#FFFFFF"
+				onOrOff = 1;
 			}
 			else{
-				controls_ctx.fillStyle = button.cor;
+				onOrOff = 0;
 			}
-			controls_ctx.fillRect(button.x, button.y, button.largura, button.altura);
-			//controls_ctx.drawImage(buttonImage, buttonCoords.x, buttonCoords.y, buttonCoords.w, buttonCoords.h, button.x, button.y, button.largura, button.altura);
+			controls_ctx.drawImage(graphic, button.ID*button.largura, onOrOff*button.altura, 80, 80, button.x, button.y, button.largura, button.altura);
 		}
 	}
 }
 
 class Butao{
-	constructor(x, y, largura, altura, cor, tipo, proporcaoPosX = 0, proporcaoPosY = 0){ // ultimos 2 argumentos são necessários por motivos apenas de responsividade
+	constructor(x, y, largura, altura, tipo, ID = 14){
 		this.ativo = false;
-		this.cor = cor;
 		this.altura = altura;
 		this.largura = largura;
 		this.x = x;
 		this.y = y;
+		this.ID = ID;
 		this.tipo = tipo;
-		this.OverPos = {
-			x: proporcaoPosX, y: proporcaoPosY
-		};
+		
 	}
 	contemPonto(x,y){
 		if(x < this.x || x > this.x + this.largura || y < this.y || y > this.y + this.altura){
@@ -62,26 +54,26 @@ class Butao{
 }
 
 var Controule = {
-	Botoeses: [new Butao(controls_canvas.width/18*0.5,  controls_canvas.height/10*6.5, 80, 80,"#888888","visivel", 0.5, 6.5),//⬅ 0
-				new Butao(controls_canvas.width/18*2,  controls_canvas.height/10*5, 80, 80, "#888888", "visivel", 2, 5),//⬆ 1
-				new Butao(controls_canvas.width/18*3.5,  controls_canvas.height/10*6.5, 80, 80, "#888888", "visivel", 3.5, 6.5),//➡ 2
-				new Butao(controls_canvas.width/18*2,  controls_canvas.height/10*8, 80, 80, "#888888", "visivel", 2, 8),//⬇ 3
-				new Butao(controls_canvas.width/18*0.5,  controls_canvas.height/10*8, 80, 80, "#006000", "invisivel", 0.5, 8),//↙ 4
-				new Butao(controls_canvas.width/18*3.5,  controls_canvas.height/10*8, 80, 80, "#009000", "invisivel", 3.5, 8),//↘ 5
-				new Butao(controls_canvas.width/18*3.5,  controls_canvas.height/10*5, 80, 80, "#005000", "invisivel", 3.5, 5),//↗ 6
-				new Butao(controls_canvas.width/18*0.5,  controls_canvas.height/10*5, 80, 80, "#000800", "invisivel", 0.5, 5),//↖ 7
+	Botoeses: [new Butao(10,  controls_canvas.height - 160, 80, 80, "visivel", 3),//⬅ 0
+				new Butao(90,  controls_canvas.height- 240, 80, 80, "visivel", 0),//⬆ 1
+				new Butao(170,  controls_canvas.height - 160, 80, 80, "visivel", 1),//➡ 2
+				new Butao(90,  controls_canvas.height - 80, 80, 80, "visivel", 2),//⬇ 3
+				new Butao(10,  controls_canvas.height - 80, 80, 80, "invisivel"),//↙ 4
+				new Butao(170,  controls_canvas.height - 80, 80, 80, "invisivel"),//↘ 5
+				new Butao(170,  controls_canvas.height - 240, 80, 80, "invisivel"),//↗ 6
+				new Butao(10,  controls_canvas.height - 240, 80, 80, "invisivel"),//↖ 7
 				
 				//botao
-				new Butao(controls_canvas.width/18*14.5,  controls_canvas.height/10*8, 80, 80, "#792F00" , "visivel", 14.5, 8),//B 8
-				new Butao(controls_canvas.width/18*13,  controls_canvas.height/10*6.5, 80, 80, "#00739F","visivel", 13, 6.5),//Y 9
-				new Butao(controls_canvas.width/18*16,  controls_canvas.height/10*6.5 ,80 ,80, "#008849","visivel", 16, 6.5),//A 10
+				new Butao(controls_canvas.width - 170,  controls_canvas.height-80, 80, 80 , "visivel",6),//B 8
+				new Butao(controls_canvas.width - 250,  controls_canvas.height-160, 80, 80,"visivel", 4),//Y 9
+				new Butao(controls_canvas.width - 90,  controls_canvas.height-160 ,80, 80, "visivel", 5),//A 10
 				//triggers
-				new Butao(controls_canvas.width/18*0.5, controls_canvas.height/10*0.5, 120, 60, "#888888", "visivel", 0.5, 0.5),//select
-				new Butao(controls_canvas.width/18*15, controls_canvas.height/10*0.5, 120, 60, "#8888AB", "visivel", 15, 0.5),//z
-				new Butao(controls_canvas.width/18*8, controls_canvas.height/10*0.5, 120, 60, "#888888", "visivel", 8, 0.5),//start
-				new Butao(controls_canvas.width/18*14.5, controls_canvas.height/10*5, 80, 80,"#79002f" , "visivel", 14.5, 5)//x
+				new Butao(controls_canvas.width/2 - 90, 25, 80, 80, "visivel", 11),//select
+				new Butao(controls_canvas.width - 90, controls_canvas.height/10*0.5, 80, 80, "visivel", 9),//z
+				new Butao(controls_canvas.width/2 + 10, controls_canvas.height/10*0.5, 80, 80, "visivel", 10),//start
+				new Butao(controls_canvas.width - 170, controls_canvas.height- 240, 80, 80, "visivel", 7)//x
 	],
-	graph: document.querySelector("#controlGraphics"),
+	graph: document.querySelector(".controles"),
 	testarButoes: function(target_touches){
 		var bucto, indice0, indice1, toq;
 		
@@ -91,7 +83,7 @@ var Controule = {
 			
 			for(indice1 = target_touches.length-1;indice1 > -1;indice1--){
 				toq = target_touches[indice1];
-				if(bucto.contemPonto((toq.clientX - boundingRect.left), (toq.clientY - boundingRect.top))){
+				if(bucto.contemPonto((toq.clientX - boundingRect.left)*aspectRatio, (toq.clientY - boundingRect.top)*aspectRatioHeight)){
 					bucto.ativo = true;
 					break;
 				}
