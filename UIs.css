@@ -10,7 +10,7 @@
 
 @keyframes ballForm{
 	0%{
-		transform: scale(7);
+		transform: scale(0);
 	} 100% {
 		transform: scale(1);
 	}
@@ -204,4 +204,25 @@
 
 .titleScreen .titleCommand{
 	animation: blinking 3s linear infinite;
+}
+
+balaoDeTexto{
+	position: absolute;
+	top: 0;
+	left: 0;
+	background: #fff;
+	border-radius: 50%;
+	padding: 2em;
+	border: 2px solid #000;
+}
+balaoDeTexto::after{
+	position: absolute;
+	content: 'Guaxo';
+	top: 0;
+	left: 0;
+	background: #fff;
+	border-radius: 50%;
+	padding: .5em 1em;
+	font-size: .7em;
+	border: 2px solid #000;
 }

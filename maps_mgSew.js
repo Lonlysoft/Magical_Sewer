@@ -25,15 +25,17 @@ class Box{
 	}
 }
 
-class Coin extends Box{
-	constructor(x, y, z, value){
-		super(x, y, z, 10, 10, 10);
+class Item{
+	constructor(ID, nome, value, tipo, equivalente = "consumivelInstantaneo", w, h, p, x, y, z){
+		this.boxCol = new Box(x, y, z, w, h, p);
+		this.ID = ID;
 		this.isCollected = false;
 		this.pontoDaTela = new Array(2)
 		this.velocity = {x: 0, y: 0, z: 0};
 		this.friction = 0.9;
-		this.tipo = "moeda"
-		this.valor = value;
+		this.equiv = equivalente;
+		this.tipo = tipo
+		this.value = value;
 		this.visivel = false;
 		this.shadow = {
 			x: this.x, y: this.y+this.z, w: this.w, h: this.p+this.h
@@ -52,17 +54,6 @@ class Coin extends Box{
 		this.velocity.x *= this.friction;
 	}
 	//quando coletada o contador irà ser += this.valor
-}
-
-class Coletavel extends Box{
-	constructor(ID, x, y, z, w, h, p, tipo){
-		super(x, y, z, w, h, p);
-		this.tipo = tipo;
-		this.ID = ID;
-	}
-	update(){
-		
-	}
 }
 
 class Boundary{
@@ -93,71 +84,45 @@ function tipify(num){
 	}
 }
 
-class Plataforma{
-	constructor(x, z, w, p, y, h, tipo){
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.p = p;
-		this.w = w;
-		this.h = h;
-		this.pontoDaTela = new Array(2)
-		this.tipo = tipo;
-		this.visivel = false;
-		this.shadow = {
-			x: this.x, y: this.y+this.z, w: this.w, h: this.p+this.h
-		};
-	}
-	desenhar(){
-		ctx.fillStyle = "Orange"
-		ctx.fillRect(this.pontoDaTela[0], this.pontoDaTela[1], this.w, this.p + this.h,);
-	}
-	update(){
-		this.pontoDaTela[0] = -40+WorldToScreen1D(this.x, Camera.x);
-		this.pontoDaTela[1] = WorldToScreen1D(this.z - this.y, Camera.y);
-	}
-}
-
-//plataformas
-var estruturasAtivas = [];
+//objetos
+const arrayDeItens = [];
 
 
-function handlePlat(){
+function handleItems(){
 	let estruturasBox;
 	let trocador;
 	let cameraBox = [Camera.x, Camera.y, Camera.w, Camera.h]
-	for(let i = 0; i < estruturasAtivas.length; i++){
-		if(estruturasAtivas[i] == undefined){
-			estruturasAtivas[i].splice(i, i);
+	for(let i = 0; i < arrayDeItens.length; i++){
+		if(arrayDeItens[i] == undefined){
+			arrayDeItens[i].splice(i, i);
 		}
-		estruturasAtivas[i].update();
-		estruturasAtivas[i].desenhar();
-		estruturasBox = [estruturasAtivas[i].x, estruturasAtivas[i].z, estruturasAtivas[i].w, estruturasAtivas[i].p]
-		if(!col.AABB(estruturasBox, cameraBox) || estruturasAtivas[i].visivel == false){
-			estruturasAtivas[i].visivel = false;
-			trocador = estruturasAtivas[estruturasAtivas.length-1];
-			estruturasAtivas[estruturasAtivas.length-1] = estruturasAtivas[i];
-			estruturasAtivas[i] = trocador;
-			estruturasAtivas.pop();
+		arrayDeItens[i].update();
+		arrayDeItens[i].desenhar();
+		estruturasBox = [arrayDeItens[i].x, arrayDeItens[i].z, arrayDeItens[i].w, arrayDeItens[i].p]
+		if(!col.AABB(estruturasBox, cameraBox) || arrayDeItens[i].visivel == false){
+			arrayDeItens[i].visivel = false;
+			trocador = arrayDeItens[arrayDeItens.length-1];
+			arrayDeItens[arrayDeItens.length-1] = arrayDeItens[i];
+			arrayDeItens[i] = trocador;
+			arrayDeItens.pop();
 		}
 	}
-	for(let i = 0; i < mapaAtual.plataformas.length; i++){
-		estruturasBox = [mapaAtual.plataformas[i].x, mapaAtual.plataformas[i].z, mapaAtual.plataformas[i].w, mapaAtual.plataformas[i].p];
-		if(col.AABB(cameraBox, estruturasBox) && mapaAtual.plataformas[i].visivel == false){
-			estruturasAtivas.push(mapaAtual.plataformas[i]);
-			mapaAtual.plataformas[i].visivel = true;
+	for(let i = 0; i < mapaAtual.items.length; i++){
+		estruturasBox = [mapaAtual.items[i].x, mapaAtual.items[i].z, mapaAtual.items[i].w, mapaAtual.items[i].p];
+		if(col.AABB(cameraBox, estruturasBox) && mapaAtual.items[i].visivel == false){
+			arrayDeItens.push(mapaAtual.items[i]);
+			mapaAtual.items[i].visivel = true;
 		}
 	}
 }
 
 
 //pessoas e NPCS
-
+var mapa_floor_tiles = document.querySelector("#tilemap");
 class LevelScenery{
-	constructor(largura, altura, Nome, chaozinhoMaroto, sombrinhas, angulacaoDeTerreno, relevoFudido, tipoDeColisao, colisaoDosChars, spawnerDeInimigos, objectosMarotos, objectMarotosFrente, estruturasAvulsas){
+	constructor(largura, altura, Nome, chaozinhoMaroto, sombrinhas, angulacaoDeTerreno, relevoFudido, tipoDeColisao, colisaoDosChars, spawnerDeInimigos, objectosMarotos, itemsGrid, temAgua, waterGrid = []){
 		this.floorGrid = chaozinhoMaroto;
 		this.objectGrid = objectosMarotos;
-		this.objectGridFront = objectMarotosFrente;
 		this.shadowGrid = sombrinhas		
 		this.ang = angulacaoDeTerreno;
 		this.relevoGrid = relevoFudido;
@@ -169,7 +134,11 @@ class LevelScenery{
 		this.enemyGrid = spawnerDeInimigos
 		this.limites = [];
 		this.inims = [];
-		this.plataformas = estruturasAvulsas;
+		this.itemGrid = itemsGrid;
+		this.items = [];
+		this.temAgua = temAgua;
+		this.waterGrid = waterGrid;
+		this.aguaLimites = [];
 	}
 	
 	settarFronteiras(){
@@ -202,6 +171,37 @@ class LevelScenery{
 			}
 		}
 	}
+	settarAgua(){
+		if(this.temAgua){
+			for(let i = 0; i < this.altura; i++){
+				this.aguaLimites.push(new Array());
+				for(let j = 0; j < this.largura; j++){
+					this.aguaLimites[i].push(new Boundary(j * TILE_SIZE, this.waterGrid[i][j] * TILE_SIZE, i * TILE_SIZE, "agua"));
+				}
+			}
+		}
+	}
+	
+	settarItensColetaveis(itemSource){
+		for(let i = 0; i < this.altura; i++){
+			this.items.push(new Array());
+			for(let j = 0; j < this.largura; j++){
+				if(this.itemGrid[i][j] >= 0){
+					this.items[i].push(new Item(
+							itemSource[ this.itemGrid[i][j] ][0], itemSource[ this.itemGrid[i][j] ][1], 
+							itemSource[ this.itemGrid[i][j] ][2], itemSource[ this.itemGrid[i][j] ][3], 
+							itemSource[ this.itemGrid[i][j] ][4], itemSource[ this.itemGrid[i][j] ][5], 
+							itemSource[ this.itemGrid[i][j] ][6], itemSource[ this.itemGrid[i][j] ][7], 
+							j*TILE_SIZE, i*TILE_SIZE, this.relevoGrid[i][j]*TILE_SIZE
+						)
+					);
+					
+				} else{
+					this.items[i].push(0);
+				}
+			}
+		}
+	}
 	drawFloor(type){
 		//1 quer dizer imagem estática
 		//2 quer dizer botar os tilesets
@@ -224,44 +224,7 @@ class LevelScenery{
 				for(let j = y_grid; j < y_endGrid; j++){
 					let renderPlusX = i * TILE_SIZE - Camera.x + canvas.width*0.5 - Camera.w*0.5;
 					let renderPlusY = j * TILE_SIZE - Camera.y + canvas.height*0.5 - Camera.h*0.5;
-					switch(this.floorGrid[j][i]){
-						case 12:
-							ctx.fillStyle = "DarkGreen";
-							ctx.fillRect(renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE);
-							break;
-						case 5:
-							ctx.fillStyle = "#39496F";
-							ctx.fillRect(renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE);
-							
-							break;
-						case 555:
-							ctx.fillStyle = "#404040";
-							ctx.fillRect(renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE); 
-							break;
-						case 7:
-							ctx.fillStyle = "#ff00ff";
-							ctx.fillRect(renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE);
-							
-							break;
-						case 2:
-							ctx.fillStyle = "#FFFF97"
-							ctx.fillRect(renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE);
-							
-							break;
-						case 1:
-							ctx.fillStyle = "#6CAD29"
-							ctx.fillRect(renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE);
-							
-							break;
-						case "bu":
-							ctx.fillStyle = "#000000"
-							ctx.fillRect(renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE);
-							
-							break;
-						default:
-							
-							break;
-					}
+					ctx.drawImage(mapa_floor_tiles, this.floorGrid[j][i]*TILE_SIZE % mapa_floor_tiles.width, Math.floor(this.floorGrid[j][i]/WorldToGrid(mapa_floor_tiles.width, TILE_SIZE) * TILE_SIZE), TILE_SIZE, TILE_SIZE, renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE);
 				}
 			}
 		}
@@ -280,29 +243,11 @@ class LevelScenery{
 		if(y_endGrid > this.altura) y_endGrid = this.altura;
 		let objGrd;
 		
-		switch(camada){
-			case 1: objGrd = this.objectGrid;
-			break;
-			case 2: objGrd = this.objectGridFront;
-			break;
-		}
-		
 		for(let i = x_grid; i < x_endGrid; i++){
 			for(let j = y_grid; j < y_endGrid; j++){
 				let renderPlusX = i * TILE_SIZE - Camera.x + canvas.width*0.5 - Camera.w*0.5;
 				let renderPlusY = j * TILE_SIZE - Camera.y + canvas.height*0.5 - Camera.h*0.5;
-				switch(this.objectGrid[j][i]){
-					case 7: 
-						ctx.fillStyle = "#404040";
-						ctx.fillRect(renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE); 
-					break;
-					case 1:
-						ctx.fillStyle = "#333333";
-						ctx.fillRect(renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE);
-					break;
-					default:
-					break;
-				}//fim switch
+				ctx.drawImage(mapa_floor_tiles, this.objectGrid[camada][j][i] *TILE_SIZE % mapa_floor_tiles.width, Math.floor(this.objectGrid[camada][j][i]/WorldToGrid(mapa_floor_tiles.width, TILE_SIZE)) *TILE_SIZE, TILE_SIZE, TILE_SIZE, renderPlusX, renderPlusY, TILE_SIZE, TILE_SIZE)
 			}//fim for do y.
 		}// fim for do x.
 	}//fim objectDraw

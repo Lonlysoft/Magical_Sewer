@@ -36,7 +36,7 @@ var fending = 1;
 function mkSqr(velocidade, height, x = 0, y = 0){
 	for(let i = 0; i < 4; i++){
 		ctx.rotate(3.14/2);
-		ctx.fillRect(0, 0, canvas.width, canvas.height)
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
 	}
 }
 */

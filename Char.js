@@ -29,9 +29,13 @@ class Ser{
 		this.sprite = {
 			w: 154,
 			h: 154
-		}
+		};
+		this.gravidade = GRAVIDADE_NA_TERRA;
 		this.frameX;
 		this.frameY;
+		this.shadow = {
+			x: this.x, y: this.y+this.z, w: this.w, h: this.p+this.h
+		};
 	}
 	
 	andar(axis){
@@ -82,9 +86,10 @@ class Protagonista extends Ser{
 		this.onGround = true;
 		this.nadando = false;
 		this.podeTomarDano = true;
-		this.calda = new Array(calda);
-		//cabeca, corpo, maoD, maoC, pernas, reliquia01, reliquia02, reliquia03
-		this.equipamentos = [0, 0, 0, 0, 0, 0, 0, 0];
+		this.calda = [];
+		this.mao = 0;
+		this.caldaMaxLength = calda;
+		this.money = 0;
 		this.xp = 0;
 		this.oldFznd = "still"
 		this.invensibilidade = false;
@@ -111,8 +116,11 @@ class Protagonista extends Ser{
 	//graphics
 	desenhar(){
 		//ctx.drawImage(this.grapho, this.frameX*this.sprite.w, this.frameY*this.sprite.h, this.sprite.w, this.sprite.h, this.pontoCentral[0]-this.boxCol.h*0.5, this.pontoCentral[1]-this.boxCol.h, this.boxCol.h, this.boxCol.h);
+		drawShadow(ctx, this, 1);
 		ctx.fillStyle = "teal"
-		ctx.fillRect(this.pontoCentral[0]-this.boxCol.h*0.5, this.pontoCentral[1]+this.boxCol.p*0.5-this.boxCol.h, this.boxCol.h, this.boxCol.h)
+		
+		ctx.fillRect(this.pontoCentral[0]-this.boxCol.h*0.5, this.pontoCentral[1]+this.boxCol.p*0.5-this.boxCol.h, this.boxCol.h, this.boxCol.h);
+		
 	}
 	
 	spawnInRelevo(x, y){
@@ -139,16 +147,14 @@ class Protagonista extends Ser{
 	//RPG alikes
 	equip(tool){
 		for(let d = 0; d < this.calda.length; d++){
-			if(this.calda[d] == nomeDoEquipamento){
-				this.calda[d] = 0;
-			}
+			
 			this.equipamentos[idSearchType(tool.type)] = nomeDoEquipamento;
 		}
 	}
 	atacar(){
 		col.createAtkBox(this.boxCol, this.ATKbox, this.direcao);
 		ctx.fillStyle = "#f00"
-		ctx.fillRect(WorldToScreen1D(-20 + this.ATKbox.x, Camera.x), WorldToScreen1D(-20 + this.ATKbox.z - this.ATKbox.y, Camera.y), this.ATKbox.w, this.ATKbox.h);
+		ctx.fillRect(WorldToScreen1D(this.ATKbox.x, Camera.x), WorldToScreen1D(this.ATKbox.z - this.ATKbox.y, Camera.y), this.ATKbox.w, this.ATKbox.h);
 		let entity1Box = [this.ATKbox.x, this.ATKbox.z, this.ATKbox.w, this.ATKbox.p]; let entity2box = new Array(4);
 		for(let i = 0; i < arrayDeInimigos.length; i++){
 			entity2box[0] = arrayDeInimigos[i].boxCol.x;
@@ -231,16 +237,23 @@ function handleDamage(entity, entity2){
 	let atkBox = [entity2.ATKbox.x, entity2.ATKbox.z, entity.ATKbox.w, entity.ATKbox.p, entity.ATKbox.y, entity.ATKbox.h]
 	if(AABB3D(hitBox, atkBox)){
 		switch(enemyATKbox.type){
-			case "arranhao":
-				entity.velocity.x += 8 * entity.ATKbox.magnitude
+			case "socoFraco":
+				entity.velocity.x += 8 * entity2.ATKbox.magnitude
 			break;
-			case "soco":
-				entity.velocity.x += 120;
+			case "socoForte":
+				entity.velocity.x += 9;
 				entity.fazendo = "danoForte";
 				entity.hp -= entity2.ATK - entity.DEF;
 			break;
+			case "devorar"://nao vai ser usada aqui.
+				entity2.belly.push(entity2);
+				deletarEntidade(entity2, arrayDeInimigos);
+			break;
 			case "fogo":
 				entity.velocity.y += 9;
+			break;
+			case "gosma":
+				entity.friction = 0.9;
 			break;
 		}
 	}

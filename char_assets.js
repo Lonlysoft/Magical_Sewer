@@ -1,5 +1,4 @@
-var sombra = {x: 0, y: 0, z: 0, img: new Image()};
-sombra.img.src = "src/imagens/sombras.png";
+
 
 var personagens = [
 	new Protagonista(
@@ -11,9 +10,9 @@ var personagens = [
 		10, //VMAX
 		33, //Jump max
 		10, //inventory size
-		90, //altura do bixo
-		58, //largura
-		58, //profundidade (n tem nada a ver com a historia)
+		24,//90, //altura do bixo
+		14, //largura
+		14, //profundidade (n tem nada a ver com a historia)
 		["dashDive", "hold"],
 		"#Guaxo" //argumento pro querySelector
 	),

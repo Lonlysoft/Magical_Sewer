@@ -13,11 +13,14 @@ const UI = {
 	isQuickStatsHere: false,
 	isCharAtualizou: false,
 	isPausing: false,
+	isDialogando: false,
 	HUD_HP: document.querySelector(".charWin"),
 	HP_bar: document.querySelector(".charWin__HPbar"),
+	nomeDoPersonagem: document.querySelector(".charWin .quickStats .nomePersonagem"),
 	pause: document.querySelector(".pauseMenu"),
 	pauseItem: document.getElementsByClassName("it"),
 	inventario: document.querySelector(".inventario"),
+	dialogBoxCanvas: document.querySelector(".dialogos"),
 	quickStating: function(){
 		if(!this.isQuickStatsHere){
 			this.HUD_HP.style.display = "flex";
@@ -52,7 +55,7 @@ const UI = {
 			this.inventario.style.display = "flex";
 			let inventStr = "";
 			for(let i = 0; i < entity_bag.length; i++){
-				inventStr += '<div class = "inventItem">' + personagemAtual.calda[i] + '</div>';
+				inventStr += '<div class = "inventItem">' + entity_bar[i] + '</div>';
 			}
 			this.inventario.innerHTML = inventStr;
 			this.isInventaring = true;
@@ -108,6 +111,9 @@ const UI = {
 		}
 		let pontosStr = personagemAtual.ser.xp + "";
 		escreva(pontosStr, HUD_canvin.width - 100, HUD_canvin.height - 115);
+	},
+	addDialogBox(){
+		
 	}
 }
 
@@ -131,7 +137,7 @@ const PauseMenu = {
 	opcoes: ["falar", "items", "olhar", "status"],
 	
 	falar(){
-		
+		UI.addDialogBox();
 	},
 	items(){
 		UI.startInventario(personagemAtual.calda);

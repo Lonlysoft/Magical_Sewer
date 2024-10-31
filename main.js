@@ -11,7 +11,7 @@ var guaxo_sta_process = 0
 var inimigosForamCarregados = false;
 var demandarTransicao = true
 
-const CentroDaTela = [canvas.width/2, canvas.height/2]
+const CentroDaTela = [canvas.width/2, canvas.height/2];
 
 //limpar a tela
 function limpar(contexto){
@@ -35,10 +35,6 @@ function GameBonanza(){
 		//adicione aq o event listener para keyBoard controls (é um if...else tá?)
 		//na verdade é mais simples de fazer de outra forma.
 		//EventoDeTeclado
-		let date = new Date().getHours();
-		let body = document.getElementById("body");
-		if(date == 17 && body.style.backgroundImage != "")
-			body.style.backgroundImage = "url('src/imagens/sunset.png')";
 		EventoDeToq();
 		window.addEventListener("resize", resize);
 		resize();
@@ -53,8 +49,8 @@ var scrnAppear = false;
 var personagemSelecionado = 0;
 
 //saving issues
-var GameMoment = -3;//são o codigo salas do game, cada um tem um.
-var GameMoment_Sav = 0;
+var GameMoment = -2;//são o codigo salas do game, cada um tem um.
+var GameMoment_Sav = 1;
 // modular o frame
 function GamePlay(){
 	limpar(ctx);
@@ -121,11 +117,12 @@ function GamePlay(){
 					transicaoDeTela("vindo", 0.08);
 					if(alfa <= 0){
 						demandarTransicao = false;
-						scrnAppear = true
+						scrnAppear = true;
 					}
 				}
+				//tocarMusica(1);
 				UI.TelaTitulo()
-				desenharBotoes(Controule.Botoeses, Controule.graph)
+				desenharBotoes(Controule.Botoeses, Controule.graph);
 				//adicionar musica
 				action("start");
 				if(demandarTransicao == true && scrnAppear){
@@ -167,7 +164,8 @@ function GamePlay(){
 			break;
 			
 		case 2:
-			//o jogo principal 
+			//o jogo principal
+			if(frame >= 30) Relogio.passarTempo();
 			if(gameFeature.pause){
 				GameMomentSav = GameMoment;
 				GameMoment = 9999;
@@ -181,6 +179,7 @@ function GamePlay(){
 				inimigosForamCarregados = true;
 			}
 			if(!personagemAtual.isSpawn && scenery.hasDeclaired){
+				UI.nomeDoPersonagem.innerHTML = personagemAtual.Nome;
 				personagemAtual.isSpawn = personagemAtual.spawn();
 			}
 			if(demandarTransicao){
@@ -194,7 +193,6 @@ function GamePlay(){
 			adicionarImigos();
 			
 			scenery.desenhar();
-			handlePlat();
 			for(let i = 0; i < arrayDeInimigos.length; i++){
 				arrayDeInimigos[i].update();
 				colisionar(arrayDeInimigos[i], i);
@@ -211,7 +209,6 @@ function GamePlay(){
 			handleOld();
 			controlState_save();
 			Camera.moverPara(personagemAtual.WorldPos.x, personagemAtual.WorldPos.z, personagemAtual.WorldPos.y);
-			
 			debugForMain();
 			UI.endPausing();
 			UI.quickStating();
@@ -220,7 +217,7 @@ function GamePlay(){
 		case 3:
 			//tela de selecionar os personagens
 			UI.startCharactering();
-			desenharBotoes(Controule.Botoeses, Controule.graph);
+			desenharBotoes(Controule.Botoeses);
 			if(demandarTransicao == true){
 				if(alfa <= 0){
 					demandarTransicao = false;
@@ -246,6 +243,7 @@ function GamePlay(){
 	}
 	if(frame >= 30){
 		frame = 0;
+		
 		if(frameaux >= 180){
 			frameaux = 0;
 		}

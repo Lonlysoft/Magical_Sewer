@@ -1,7 +1,7 @@
 //codigo dos INIMIGOS E NPCs
 
-var arrayDeEntidade = [];
-var arrayDeInimigos = [];
+const arrayDeEntidade = [];
+const arrayDeInimigos = [];
 
 function adicionarImigos(){
 	let x_grid = Math.floor((Camera.x)/60);
@@ -18,13 +18,13 @@ function adicionarImigos(){
 	for(let i = x_grid; i < x_endGrid; i++){
 		if(y_grid-1 > 0 && mapaAtual.inims[y_grid-1][i] != 0 && mapaAtual.inims[y_grid][i].isAlive && !mapaAtual.inims[y_grid][i].isSpawn){
 			arrayDeInimigos.push(mapaAtual.inims[y_grid][i]);
-			mapaAtual.inims[y_grid][i].isSpawn = arrayDeInimigos[arrayDeInimigos.length-1].spawn();;
+			mapaAtual.inims[y_grid][i].isSpawn = arrayDeInimigos[arrayDeInimigos.length-1].spawn();
 		}
 	}
 	for(let i = x_grid; i < x_endGrid; i++){
 		if(y_endGrid+1 < mapaAtual.altura && mapaAtual.inims[y_endGrid-1][i] != 0 && mapaAtual.inims[y_endGrid][i].isAlive && !mapaAtual.inims[y_endGrid][i].isSpawn){
 			arrayDeInimigos.push(mapaAtual.inims[y_endGrid][i]);
-			mapaAtual.inims[y_endGrid+1][i].isSpawn = arrayDeInimigos[arrayDeInimigos.length-1].spawn();;
+			mapaAtual.inims[y_endGrid+1][i].isSpawn = arrayDeInimigos[arrayDeInimigos.length-1].spawn();
 		}
 	}
 	for(let i = y_grid; i < y_endGrid; i++){
@@ -36,7 +36,7 @@ function adicionarImigos(){
 	for(let i = y_grid; i < y_endGrid; i++){
 		if(x_endGrid+1 < mapaAtual.altura && mapaAtual.inims[i][x_endGrid-1] != 0 && mapaAtual.inims[i][x_endGrid-1].isAlive && !mapaAtual.inims[i][x_endGrid-1].isSpawn){
 			arrayDeInimigos.push(mapaAtual.inims[i][x_endGrid-1]);
-			mapaAtual.inims[i][x_endGrid-1].isSpawn = arrayDeInimigos[arrayDeInimigos.length-1].spawn();;
+			mapaAtual.inims[i][x_endGrid-1].isSpawn = arrayDeInimigos[arrayDeInimigos.length-1].spawn();
 		}
 	}
 }
@@ -99,38 +99,15 @@ class Inimigo extends Ser{
 		this.boxCol.z += this.velocity.z;
 		let colArr = [this.boxCol.x, this.boxCol.z, this.boxCol.w, this.boxCol.p, this.boxCol.y, this.boxCol.h];
 		this.AI();
-		this.pontoCentral[0] = WorldToScreen1D(this.WorldPos.x, Camera.x);
-		this.pontoCentral[1] = WorldToScreen1D(this.WorldPos.z-this.WorldPos.y, Camera.y) - this.boxCol.y;
+		this.pontoCentral[0] = WorldToScreen1D(this.WorldPos.x, Camera.x, Camera.w/2 - CentroDaTela[0]);
+		this.pontoCentral[1] = WorldToScreen1D(this.WorldPos.z-this.WorldPos.y, Camera.y, Camera.h/2 - CentroDaTela[1]);
 	}
 	AI(){
-		switch(this.comportamento){
-			case "linearX":
-				this.andar("x");
-				this.rayCast = (this.pol == -1) ? this.boxCol.x : this.boxCol.x + this.boxCol.w;
-				if(mapaAtual.relevoGrid[WorldToGrid(this.WorldPos.z, TILE_SIZE)][WorldToGrid(this.rayCast, TILE_SIZE)] != mapaAtual.relevoGrid[WorldToGrid(this.WorldPos.z, TILE_SIZE)][WorldToGrid(this.WorldPos.x, TILE_SIZE)]){
-					this.pol *= -1;
-				}
-			break;
-			
-			case "linearZ":
-				this.andar("z");
-				this.rayCast = (this.pol == 1) ? this.boxCol.z : this.boxCol.z+this.boxCol.p;
-				if(mapaAtual.relevoGrid[WorldToGrid(this.WorldPos.z, TILE_SIZE)][WorldToGrid(this.rayCast, TILE_SIZE)] != mapaAtual.relevoGrid[WorldToGrid(this.WorldPos.z, TILE_SIZE)][WorldToGrid(this.WorldPos.x, TILE_SIZE)]){
-					this.pol *= -1;
-				}
-			break;
-			
-			case "circular":
-				this.andar("x");
-				this.andar("z");
-				this.andar("x", -1);
-				this.andar("z", -1);
-			break;
-		}
+		BehaviorList[this.comportamento](this);
 	}
 	desenhar(){
 		ctx.fillStyle = "#355467";
-		ctx.fillRect(this.pontoCentral[0] - this.boxCol.w*0.5, this.pontoCentral[1], this.boxCol.w, this.boxCol.h);
+		ctx.fillRect(this.pontoCentral[0] - this.boxCol.w*0.5, this.pontoCentral[1] - this.boxCol.h, this.boxCol.w, this.boxCol.h);
 	}
 	spawn(){
 		this.WorldPos.x = this.SpawnPos.x;
@@ -144,52 +121,119 @@ class Inimigo extends Ser{
 }
 
 class NonPlayableChar{
-	constructor(nome, imgAltura, imgLargura, altura, largura, profundidade, peso, coords, dialogs){
+	constructor(nome, altura, largura, profundidade, peso, coords, dialogs, pathArr){
 		this.dialog = dialogs;
 		this.dimensoes = {w: largura, h: altura, p: profundidade};
 		this.peso = peso;
 		this.boxCol = new Box(coords[0], coords[2], coords[1], this.dimensoes.w, this.dimensoes.h, this.dimensoes.p);
+		this.behaviorArr = pathArr;
 	}
 	desenhar(){
 		ctx.fillRect(this.pontoCentral[0], this.pontoCentral[1], this.boxCol.w , this.boxCol.h);
 	}
-	movement(isColNear){
+	movement(){
 		
 	}
 	routine(){
-		this.movement(this.searchCol());
+		
 	}
 	talk(){
-		drawDialogue(this.dialog);
+		UI.drawDialogue(this.dialog);
+	}
+}
+
+const BehaviorList = {
+	linearX: function(entity){
+		entity.andar("x");
+		entity.rayCast = (entity.pol == -1) ? entity.boxCol.x : entity.boxCol.x + entity.boxCol.w;
+		if(mapaAtual.relevoGrid[WorldToGrid(entity.WorldPos.z, TILE_SIZE)][WorldToGrid(entity.rayCast, TILE_SIZE)] != mapaAtual.relevoGrid[WorldToGrid(entity.WorldPos.z, TILE_SIZE)][WorldToGrid(entity.WorldPos.x, TILE_SIZE)]){
+			entity.pol *= -1;
+		}
+	},
+	linearZ: function(entity){
+		entity.andar("z");
+		entity.rayCast = (entity.pol == 1) ? entity.boxCol.z : entity.boxCol.z+entity.boxCol.p;
+		if(mapaAtual.relevoGrid[WorldToGrid(entity.WorldPos.z, TILE_SIZE)][WorldToGrid(entity.rayCast, TILE_SIZE)] != mapaAtual.relevoGrid[WorldToGrid(entity.WorldPos.z, TILE_SIZE)][WorldToGrid(entity.WorldPos.x, TILE_SIZE)]){
+			entity.pol *= -1;
+		}
+	},
+	nothing: function(){
+		
+	},
+	goToX: function(entity){
+		entity.andar("x");
+	},
+	goToZ: function(entity){
+		entity.andar("Z");
+	}
+}
+
+//ele pega um array e checa se ele chegou. s
+function scriptedBehavior(entity, objectBehav){
+	switch(objectBehav.arr[objectBehav.index][0]){
+		case "goToX": case "goToY":
+			if(objectBehav.arr[objectBehav.index][1] < entity.WorldPos.x){
+				entity.pol = 1;
+				BehaviorList[objectBehav.arr[objectBehav.index][0]](entity);
+			} else if(objectBehav.arr[objectBehav.index][1] > entity.WorldPos.x){
+				entity.pol = -1;
+				BehaviorList[objectBehav.arr[objectBehav.index][0]](entity);
+			}
+			if(objectBehav.arr[objectBehav.index][1] >= entity.WorldPos.x + 10 && objectBehav.arr[objectBehav.index][1] <= entity.WorldPos.x - 10){
+				objectBehav.index++;
+			}
+		break;
+		case "stopAndWait":
+			entity.parar();
+			if(Relogio.hora == Relogio.converterParaHorario(objectBehav.arr[objectBehav.index][1]).hora){
+				objectBehav.index++;
+			}
+		break;
+		case "talk":
+			UI.dialogo(objectBehav.arr[objectBehav.index][1]);
+			if(UI.isDialogoDismissed){
+				objectBehav.index++;
+			}
+		break;
 	}
 }
 
 //INIMIGOS DESSE JOGO, usando um array para carregá-los na classe posteriormente
 
-var inimigos = [
+const inimigos = [
 	//nome, ID, HP, ATK, DEF, ACL, VMAX, H, W, P
 	/*
 	["template", ID, HP, ATK, DEF, ACL, VMAX, ALT, LARG, PROF, Comp],
 	*/
-	["slug", 0, 100, 100, 100, 1, 7, 40, 40, 20, "linearX"],
+	["slug", 0, 100, 100, 100, 1, 7, 40, 40, 20, "nothing"],
 	["Rotund", 1, 10, 10, 10, 10, 10, 10, 10, 10, "linearZ"],
-	["MIXXANT", 2, 10, 10, 10, 10, 10, 10, 10, 10],
-	["Raposisto", 3, 8, 3, 4, 5, 8, 8, 9, 30, 30],
-	["MadRodent", 4, 5, 5, 5, 5, 7, 9, 5, 7],
-	["BinkyPipe", 4, 4, 4, 6, 7, 80, 90, 80, 67],
-	["PittyPits", 6, 6, 6, 78, 78, 89, 78, 9, 90]
-]
+	["MIXXANT", 2, 10, 10, 10, 10, 10, 10, 10, 10, "follow"],
+	["Raposisto", 3, 8, 3, 4, 5, 8, 8, 9, 30, 30, "notice"],
+	["MadRodent", 4, 5, 5, 5, 5, 7, 9, 5, 7, "rampage"],
+	["BinkyPipe", 4, 4, 4, 6, 7, 80, 90, 80, 67, "loop"],
+	["PittyPits", 6, 6, 6, 78, 78, 89, 78, 9, 90, "randompath"]
+];
 const chefes = [
 	//chefoes 
-	"CreinMouse",
-	"KitStreza"
-]
+	["CreinMouse", 0, 1000, 57, 90, 2, 9, 200, 200, 200, "specialMouseBehavior"],
+	["KitStreza", 1, 10000, 1659, 999, 4, 30, 100, 30, 30, "specialKitsune"]
+];
 //NPCs relevantes;
 const NPC_Specials = [
-	
-]
+	//nome, altura, largura, profundidade, dialogs, pathArr, coords
+	["bumb", TILE_SIZE, TILE_SIZE, TILE_SIZE, 0, ["serve pra fazer um negócio que eu não vou conseguir.", "disponível pra amanhã a noite"], [["goToX", 20], ["goToZ", 40], ["goToX", 30]]]
+];
 
 //NPCs irrelevantes;
 const NPC = [
-	
+	[]
+];
+
+//ID, nome, valor, tipo, equivalente, w, h, p, x, y, z
+const ITEMS = [
+	[0, 1, "moeda", "moeda", "coletavelinstantaneo", 20, 20, 20],
+	[1, 50, "hambúrguer", "alimento", "consumivel", 20, 20, 20],
+	[2, 100, "bolo", "alimento", "consumivel", 20, 20, 20],
+	[3, 0, "bloco puxavel", "bloco", "seguravel", TILE_SIZE, TILE_SIZE, TILE_SIZE],
+	[4, 19, "martelo", "equipamento", "equipavel", 20, 20, 20]
 ]

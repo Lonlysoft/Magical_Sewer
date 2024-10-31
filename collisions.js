@@ -56,7 +56,7 @@ const col = {
 		}
 	},
 	
-	handleShadowCoords(entity){
+	handleShadowCoords(entity, num = -1){
 		let topLeft = mapaAtual.shadowGrid[WorldToGrid(entity.boxCol.z, TILE_SIZE)][WorldToGrid(entity.boxCol.x, TILE_SIZE)];
 		let topRight = mapaAtual.shadowGrid[WorldToGrid(entity.boxCol.z, TILE_SIZE)][WorldToGrid(entity.boxCol.x+entity.boxCol.w, TILE_SIZE)];
 		let bottomLeft = mapaAtual.shadowGrid[WorldToGrid(entity.boxCol.z+entity.boxCol.p-entity.velocity.z, TILE_SIZE)][WorldToGrid(entity.boxCol.x+entity.velocity.x, TILE_SIZE)];
@@ -64,6 +64,13 @@ const col = {
 		let maxValue = maxVal([topLeft, topRight, bottomLeft, bottomRight])
 		entity.layer = maxValue;
 		//inserir sublayer baseado na colisão de sombra do inimigo
+		for(let i = 0; i < arrayDeInimigos.length; i++){
+			if(i == num) continue;
+			this.handleShadowObjects(entity, arrayDeInimigos[i].shadow, arrayDeInimigos[i].layer, arrayDeInimigos[i].sublayer);
+		}
+		for(let i = 0; i < arrayDeItens.length; i++){
+			this.handleShadowObjects(entity, arrayDeItens[i].shadow, arrayDeItens[i].layer, arrayDeItens[i].sublayer);
+		}
 	},
 	
 	handleShadowObjects(entity, shadow, shadowLayer, shadowSubLayer){
@@ -72,16 +79,6 @@ const col = {
 		if(this.AABB(entityBox, shadowBox)){
 			entity.subLayer = shadowSubLayer-1;
 			entity.layer = shadowLayer;
-		}
-	},
-	
-	moeda: function(entity, coin){
-		let entityBox = [entity.boxCol.x, entity.boxCol.z, entity.boxCol.w, entity.boxCol.p];
-		let coinBox = [coin.x, coin.z, coin.w, coin.p];
-		if(this.AABB(entityBox, coinBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, coin.y)){
-			coin.visivel = false;
-			coin.isCollected = true;
-			entity.money+=coin.value;
 		}
 	},
 	
@@ -132,6 +129,12 @@ const col = {
 				atkBox.y = boxCol.y + boxCol.h/3;
 			break;
 		}
+	},
+	
+	moeda: function(entity, coin){
+		coin.visivel = false;
+		coin.isCollected = true;
+		entity.money+=coin.value;
 	},
 	
 	deleteAtkBox: function(cu){
@@ -236,10 +239,10 @@ const col = {
 		return false;
 	},
 	
-	aguaTop: function(entity, cube){
+	agua: function(entity, cube){
 		if(entity.boxCol.y < cube.y && entity.boxCol.oldY >= cube.y){
-			entity.velocity.y = 0;
-			
+			//entity.velocity.y = 0;
+			entity.gravidade = GRAVIDADE_NA_AGUA;
 			return true;
 		}
 	},
@@ -357,6 +360,9 @@ function colisionar(entity, num = -1){
 		//aqui tbm
 	}
 	
+	entity.nadando = false;
+	entity.gravidade = GRAVIDADE_NA_TERRA;
+	
 	let curLimStartZ = WorldToGrid(entity.WorldPos.z - entity.boxCol.p*0.5, TILE_SIZE);
 	let curLimEndZ = WorldToGrid(entity.WorldPos.z + entity.boxCol.p*0.5, TILE_SIZE);
 	let curLimStartX = WorldToGrid(entity.WorldPos.x - entity.boxCol.w/2, TILE_SIZE);
@@ -397,21 +403,18 @@ function colisionar(entity, num = -1){
 	
 	
 	
-	//colisionar com os itens do cenario (coisas que vc pode pegar)
-	
-	
-	
-	//comparar colisoes com as plataformas
-	let estruturasBox;
-	for(let i = 0; i < estruturasAtivas.length; i++){
-		estruturasBox = [estruturasAtivas[i].x, estruturasAtivas[i].z, estruturasAtivas[i].w, estruturasAtivas[i].p];
-		if((col.AABB(playerBoxCol, estruturasBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, estruturasAtivas[i].y)) || (col.AABB(playerBoxCol, estruturasBox) && isBellowGround(entity.boxCol.y, estruturasAtivas[i].y + estruturasAtivas[i].h))){
-			 col[estruturasAtivas[i].tipo](entity, estruturasAtivas[i]);
+	//comparar colisoes com os itens presentes
+	let itensBox;
+	for(let i = 0; i < arrayDeItens.length; i++){
+		estruturasBox = [arrayDeItens[i].x, arrayDeItens[i].z, arrayDeItens[i].w, arrayDeItens[i].p];
+		if((col.AABB(playerBoxCol, estruturasBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, arrayDeItens[i].y)) || (col.AABB(playerBoxCol, estruturasBox) && isBellowGround(entity.boxCol.y, arrayDeItens[i].y + arrayDeItens[i].h))){
+			 col[arrayDeItens[i].tipo](entity, arrayDeItens[i]);
 		}
 	}
 	
 	
 	let mapBoxCol;
+	let waterBoxCol;
 	
 	for(let j = x_intro; j < x_end; j++){
 		for(let i = y_intro; i < y_end; i++){
@@ -421,6 +424,13 @@ function colisionar(entity, num = -1){
 				mapBoxCol = [mapaAtual.limites[i][j].x, mapaAtual.limites[i][j].z, TILE_SIZE, TILE_SIZE];
 				if(col.AABB(playerBoxCol, mapBoxCol)){
 					col[mapaAtual.limites[i][j].tipo](entity, mapaAtual.limites[i][j])
+				}
+			}
+			if(mapaAtual.temAgua && entity.WorldPos.y < mapaAtual.aguaLimites[i][j].y){
+				waterBoxCol = [mapaAtual.aguaLimites[i][j].x, mapaAtual.aguaLimites[i][j].z, TILE_SIZE, TILE_SIZE];
+				if(col.AABB(playerBoxCol, waterBoxCol)){
+					entity.nadando = true;
+					col[mapaAtual.aguaLimites[i][j].tipo](entity, mapaAtual.aguaLimites[i][j]);
 				}
 			}
 		}//fim for
@@ -459,13 +469,13 @@ function handleYcoords(entity){
 	entity.WorldPos.y += entity.velocity.y;
 	let top = mapaAtual.limites[WorldToGrid(entity.boxCol.z, TILE_SIZE)][WorldToGrid(entity.boxCol.x, TILE_SIZE)].y
 	let bottom = mapaAtual.limites[WorldToGrid(entity.boxCol.z + entity.boxCol.p, TILE_SIZE)][WorldToGrid(entity.boxCol.x + entity.boxCol.w, TILE_SIZE)].y;
-	let left = mapaAtual.limites[WorldToGrid(entity.boxCol.z, TILE_SIZE)][WorldToGrid(entity.boxCol.x + entity.boxCol.w, TILE_SIZE)].y;;
+	let left = mapaAtual.limites[WorldToGrid(entity.boxCol.z, TILE_SIZE)][WorldToGrid(entity.boxCol.x + entity.boxCol.w, TILE_SIZE)].y;
 	let right = mapaAtual.limites[WorldToGrid(entity.boxCol.z+entity.boxCol.p, TILE_SIZE)][WorldToGrid(entity.boxCol.x, TILE_SIZE)].y;;
 	let currLim = mapaAtual.limites[WorldToGrid(entity.WorldPos.z, TILE_SIZE)][WorldToGrid(entity.WorldPos.x, TILE_SIZE)].y;
 	//não é a melhor forma de fazer isso pois é 4*O(N) todos os frames.
 	
 	if((!isOnGround(entity.WorldPos.y, top) && !isOnGround(entity.WorldPos.y, left) && !isOnGround(entity.WorldPos.y, right) && !isOnGround(entity.WorldPos.y, bottom))){
-		entity.velocity.y -= 6;
+		entity.velocity.y -= entity.gravidade;
 		entity.onGround = false;
 	}
 	else{

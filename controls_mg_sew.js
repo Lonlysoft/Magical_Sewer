@@ -68,10 +68,11 @@ var Controule = {
 				new Butao(controls_canvas.width - 250,  controls_canvas.height-160, 80, 80,"visivel", 4),//Y 9
 				new Butao(controls_canvas.width - 90,  controls_canvas.height-160 ,80, 80, "visivel", 5),//A 10
 				//triggers
-				new Butao(controls_canvas.width/2 - 90, 25, 80, 80, "visivel", 11),//select
-				new Butao(controls_canvas.width - 90, controls_canvas.height/10*0.5, 80, 80, "visivel", 9),//z
-				new Butao(controls_canvas.width/2 + 10, controls_canvas.height/10*0.5, 80, 80, "visivel", 10),//start
-				new Butao(controls_canvas.width - 170, controls_canvas.height- 240, 80, 80, "visivel", 7)//x
+				new Butao(controls_canvas.width/2 - 90, 25, 80, 80, "visivel", 11),//select 11
+				new Butao(controls_canvas.width - 90, controls_canvas.height/10*0.5, 80, 80, "visivel", 9),//z 12
+				new Butao(controls_canvas.width/2 + 10, controls_canvas.height/10*0.5, 80, 80, "visivel", 10),//start 13
+				new Butao(controls_canvas.width - 170, controls_canvas.height- 240, 80, 80, "visivel", 7),//x 14
+				new Butao(16, controls_canvas.height/10*0.5, 80, 80, "visivel", 8)//L 15
 	],
 	graph: document.querySelector(".controles"),
 	testarButoes: function(target_touches){
@@ -137,6 +138,7 @@ function controlState_save(){
 	controlState.start = Controule.Botoeses[13].ativo;
 	controlState.select = Controule.Botoeses[11].ativo;
 	controlState.zed = Controule.Botoeses[12].ativo;
+	controlState.L = Controule.Botoeses[15].ativo;
 }
 
 var gameFeature = {
@@ -168,13 +170,13 @@ function action(type){
 			if(Controule.Botoeses[0].ativo && controlState.east == false){ //↖⬆↗
 				UI.pauseItem[PauseMenu.opcaoSelecionada].classList.remove("selecionado");
 				PauseMenu.opcaoSelecionada--;
-				if(PauseMenu.opcaoSelecionada < 0) PauseMenu.opcaoSelecionada = 3;
+				PauseMenu.opcaoSelecionada = PauseMenu.opcaoSelecionada%4;
 				UI.pauseItem[PauseMenu.opcaoSelecionada].classList.add("selecionado");
 			}
 			else if(Controule.Botoeses[2].ativo && controlState.west == false){ //↙⬇↘
 				UI.pauseItem[PauseMenu.opcaoSelecionada].classList.remove("selecionado");
 				PauseMenu.opcaoSelecionada++;
-				if(PauseMenu.opcaoSelecionada > 3) PauseMenu.opcaoSelecionada = 0;
+				PauseMenu.opcaoSelecionada = PauseMenu.opcaoSelecionada%4;
 				UI.pauseItem[PauseMenu.opcaoSelecionada].classList.add("selecionado");
 				
 			}
@@ -251,12 +253,15 @@ function action(type){
 				personagemAtual.parar("z");
 			}
 			
-			if(Controule.Botoeses[8].ativo && personagemAtual.onGround == true && controlState.B == false){//pulo
+			if(Controule.Botoeses[8].ativo && personagemAtual.onGround == true && controlState.B == false && !personagemAtual.nadando){//pulo
 				personagemAtual.velocity.y += personagemAtual.JPOW;
 			}
 			else if(!Controule.Botoeses[8].ativo && !personagemAtual.onGround && !personagemAtual.pulando && controlState.B){//pulo
 				personagemAtual.velocity.y = 0;
 				personagemAtual.pulando = true;
+			}
+			else if(Controule.Botoeses[8].ativo && controlState.B == false && personagemAtual.nadando){
+				personagemAtual.velocity.y += personagemAtual.JPOW;
 			}
 			if(Controule.Botoeses[9].ativo){ //Y ataque base
 				if(!personagemAtual.onGround && personagemAtual.habilidades.includes("dashDive")){
@@ -278,6 +283,18 @@ function action(type){
 					
 				}
 				*/
+			}
+			if(Controule.Botoeses[14].ativo && controlState.X == false){
+				
+			}
+			if(Controule.Botoeses[15].ativo && controlState.L == false){
+				if(!personagemAtual.onGround && personagemAtual.habilidades.includes("dashDive")){
+					personagemAtual.executarHabilidade("dashDive");
+					personagemAtual.atacar();
+				}
+			}
+			if(Controule.Botoeses[11].ativo && controlState.select == false){
+				personagemAtual.mao = (mao+1)%personagemAtual.calda.length;
 			}
 			if(Controule.Botoeses[13].ativo && controlState.start == false){//start
 				gameFeature.pause = true
