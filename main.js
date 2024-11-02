@@ -210,7 +210,6 @@ function GamePlay(){
 			handleOld();
 			controlState_save();
 			Camera.moverPara(personagemAtual.WorldPos.x, personagemAtual.WorldPos.z, personagemAtual.WorldPos.y);
-			debugForMain();
 			UI.endPausing();
 			UI.quickStating();
 		break;
