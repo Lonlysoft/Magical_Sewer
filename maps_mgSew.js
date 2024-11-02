@@ -25,36 +25,7 @@ class Box{
 	}
 }
 
-class Item{
-	constructor(ID, nome, value, tipo, equivalente = "consumivelInstantaneo", w, h, p, x, y, z){
-		this.boxCol = new Box(x, y, z, w, h, p);
-		this.ID = ID;
-		this.isCollected = false;
-		this.pontoDaTela = new Array(2)
-		this.velocity = {x: 0, y: 0, z: 0};
-		this.friction = 0.9;
-		this.equiv = equivalente;
-		this.tipo = tipo
-		this.value = value;
-		this.visivel = false;
-		this.shadow = {
-			x: this.x, y: this.y+this.z, w: this.w, h: this.p+this.h
-		};
-	}
-	desenhar(){
-		ctx.fillStyle = "#fff"
-		ctx.fillRect(this.pontoDaTela[0], this.pontoDaTela[1], this.w, this.h);
-	}
-	update(){
-		this.pontoDaTela[0] = WorldToScreen1D(this.x, Camera.x);
-		this.pontoDaTela[1] = WorldToScreen1D(this.z - this.y, Camera.y);
-		this.x += this.velocity.x;
-		this.z += this.velocity.z;
-		this.velocity.z *= this.friction;
-		this.velocity.x *= this.friction;
-	}
-	//quando coletada o contador irà ser += this.valor
-}
+
 
 class Boundary{
 	constructor(x, y, z, tipo){
@@ -81,38 +52,6 @@ function tipify(num){
 			return "dirtywater";
 		case 4:
 			return "quicksand";
-	}
-}
-
-//objetos
-const arrayDeItens = [];
-
-
-function handleItems(){
-	let estruturasBox;
-	let trocador;
-	let cameraBox = [Camera.x, Camera.y, Camera.w, Camera.h]
-	for(let i = 0; i < arrayDeItens.length; i++){
-		if(arrayDeItens[i] == undefined){
-			arrayDeItens[i].splice(i, i);
-		}
-		arrayDeItens[i].update();
-		arrayDeItens[i].desenhar();
-		estruturasBox = [arrayDeItens[i].x, arrayDeItens[i].z, arrayDeItens[i].w, arrayDeItens[i].p]
-		if(!col.AABB(estruturasBox, cameraBox) || arrayDeItens[i].visivel == false){
-			arrayDeItens[i].visivel = false;
-			trocador = arrayDeItens[arrayDeItens.length-1];
-			arrayDeItens[arrayDeItens.length-1] = arrayDeItens[i];
-			arrayDeItens[i] = trocador;
-			arrayDeItens.pop();
-		}
-	}
-	for(let i = 0; i < mapaAtual.items.length; i++){
-		estruturasBox = [mapaAtual.items[i].x, mapaAtual.items[i].z, mapaAtual.items[i].w, mapaAtual.items[i].p];
-		if(col.AABB(cameraBox, estruturasBox) && mapaAtual.items[i].visivel == false){
-			arrayDeItens.push(mapaAtual.items[i]);
-			mapaAtual.items[i].visivel = true;
-		}
 	}
 }
 

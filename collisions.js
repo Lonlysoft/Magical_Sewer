@@ -407,7 +407,7 @@ function colisionar(entity, num = -1){
 	let itensBox;
 	for(let i = 0; i < arrayDeItens.length; i++){
 		estruturasBox = [arrayDeItens[i].x, arrayDeItens[i].z, arrayDeItens[i].w, arrayDeItens[i].p];
-		if((col.AABB(playerBoxCol, estruturasBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, arrayDeItens[i].y)) || (col.AABB(playerBoxCol, estruturasBox) && isBellowGround(entity.boxCol.y, arrayDeItens[i].y + arrayDeItens[i].h))){
+		if((col.AABB(playerBoxCol, estruturasBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, arrayDeItens[i].y)) || (col.AABB(playerBoxCol, estruturasBox) && isOnGround(arrayDeItens[i].y + arrayDeItens[i].h, entity.boxCol.y))){
 			 col[arrayDeItens[i].tipo](entity, arrayDeItens[i]);
 		}
 	}

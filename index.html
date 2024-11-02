@@ -8,9 +8,9 @@
 		<link rel = "icon" type = "image/x-icon" href = "src/favicon/magical_sewer_icon_.png">
 		<link rel = "stylesheet" href = "UIs.css"/>
 		<link rel = "stylesheet" href = "animation.css"/>
-		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<!--<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Pangolin&display=swap" rel="stylesheet">-->
 		<style>
 			@font-face{
 				font-family: "classicalComic";
@@ -165,8 +165,11 @@
 			
 			<!-- Game World Graphics -->
 			<img id = "Guaxo" src = "src/imagens/guaxo_complete.png">
-			<img class = "tilemap" src = "src/imagens/tileMap.png">
+			<img id = "tilemap" src = "src/imagens/TileMap.png">
 			<img class = "titulo" src = "src/imagens/magicalTitle__beta.png">
+			<audio id = "music">
+				<source src = "src/msc/BGM13.m4a" type="audio/m4a">
+			</audio>
 		</div>
 		<div class = "inGameUI">
 			<div class = "OutGameMenus">
@@ -174,38 +177,41 @@
 					<div class = "unit glassy">
 						<img src = "src/imagens/GuaxoIcone01.png" alt = "guaxo_icon"/>
 						<h2 class = "primary title"> GUAXO </h2>
-						<div class = "button__body">Main Story Mode</div>
+						<div class = "button__body">modo história A</div>
+						<div class = "button__body">modo história B</div>
 					</div>
 						
 					<div class = "unit glassy">
 						<img src = "src/imagens/Raty01.png" alt = "raty_icon"/>
 						<h2 class = "primary title"> RATY </h2>
-						<div class = "button__body">Main Story Mode</div>
+						<div class = "button__body">modo história A</div>
+						<div class = "button__body">modo história B</div>
 					</div>
 						
 					<div class = "unit glassy">
 						<img src = "src/imagens/Danteicon.png" alt = "dante_icon"/>
 						<h2 class = "primary title"> DANTE </h2>
-						<div class = "button__body">Main Story Mode</div>
+						<div class = "button__body">modo história A</div>
+						<div class = "button__body">modo história B</div>
 					</div>
 				</section>
 				<div class = "titleScreen">
 					<img src = "src/imagens/Day.png" 
 					alt="title_representation_logo_that_theres_nothing_to_do_with_the_game"/>
 					<h1 class = "titleLogo pangolin"> Magical Sewer </h1>
+					
 					<h2 class = "titleCommand">Pressione Start</h2>
 					<footer> Em desenvolvimento. Lonlysoft 2024. Interface de usuário feita com HTML elements, mundo do jogo e controles de toque renderizado em HTML5 canvas </footer>
 				</div>
 			</div>
-			
 		</div>
+		<div class = "inGameUI dialogos"><!--<balaoDeTexto>HELLO, World</balaoDeTexto>--></div>
 		<div class = "inGameUI">
 			<div class = "HUD">
 				<div class = "charWin">
-					<img class = "imgIcon" src = "src/favicon/magical_sewer_icon_.png">
 					<div class = "quickStats">
 						<div class = "HUD__barraDeVida"><div class = "charWin__HPbar"></div></div>
-						<div class = "nomePersonagem"></div>
+						<div class = "nomePersonagem">--</div>
 					</div>
 				</div>
 				<section class = "pauseMenu glassy">
@@ -228,7 +234,6 @@
 		<div class = "cinema"><div class = "cinema__alphaLock"></div></div>
 		<canvas class = "gameScreen" id = "transicoes"></canvas>
 		<canvas class="controles_cheroso" id = "ctrl"></canvas>
-		
 		<!--gráficos-->
 		<div class = "alerta">
 				Impossivel usar o modo retrato!
@@ -242,13 +247,16 @@
 	<script src = "mapa_assets.js"></script>
 	<script src = "Char.js"></script>
 	<script src = "char_assets.js"></script>
+	<script src = "inimigos.js"></script>
+	<script src = "items.js"></script>
 	<script src = "dialogs.js"></script>
 	<script src = "NPCs.js"></script>
 	<script src = "UI.js"></script>
+	<script src = "BGM.js"></script>
 	<script src = "backgrounds.js"></script>
 	<script src = "cenery.js"></script>
 	<script src = "collisions.js"></script>
-<!--	<script src = "dayAndNightCicle.js"></script> -->
-	<script src = "debug.js"></script> <!-- script temporario n faca mudancas por aqui-->
+	<script src = "dayAndNightCicle.js"></script>
+	<script src = "debug.js"></script> <!-- script temporario nunca faça mudancas estruturais aqui-->
 	<script src = "main.js"></script>
 </html>

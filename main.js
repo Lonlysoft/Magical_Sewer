@@ -49,7 +49,7 @@ var scrnAppear = false;
 var personagemSelecionado = 0;
 
 //saving issues
-var GameMoment = -2;//são o codigo salas do game, cada um tem um.
+var GameMoment = 2;//são o codigo salas do game, cada um tem um.
 var GameMoment_Sav = 1;
 // modular o frame
 function GamePlay(){
@@ -204,6 +204,7 @@ function GamePlay(){
 			
 			personagemAtual.update();
 			colisionar(personagemAtual);
+			handleItems();
 			col.handleShadowCoords(personagemAtual);
 			handleYcoords(personagemAtual);
 			handleOld();
