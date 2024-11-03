@@ -9,12 +9,14 @@ class Item{
 		this.velocity = {x: 0, y: 0, z: 0};
 		this.friction = 0.9;
 		this.equiv = equivalente;
+		this.layer = 0;
+		this.sublayer = 0;
 		this.tipo = tipo;
 		this.value = value;
 		this.isSpawn = true;
 		this.visivel = false;
 		this.shadow = {
-			x: this.x, y: this.y+this.z, w: this.w, h: this.p+this.h
+			x: x, y: y+z, w: w, h: p+h
 		};
 	}
 	desenhar(){
@@ -22,12 +24,14 @@ class Item{
 		ctx.fillRect(this.pontoCentral[0], this.pontoCentral[1], this.boxCol.w, this.boxCol.h);
 	}
 	update(){
+		this.desenhar();
+		col.handleShadowCoords(this);
 		this.pontoCentral[0] = WorldToScreen1D(this.boxCol.x, Camera.x, Camera.w/2 - CentroDaTela[0]);
-		this.pontoCentral[1] = WorldToScreen1D(this.boxCol.z - (this.boxCol.y + this.boxCol.h), Camera.y, Camera.h/2 - CentroDaTela[1]);
+		this.pontoCentral[1] = WorldToScreen1D(this.boxCol.z, Camera.y, Camera.h/2 - CentroDaTela[1]);
 		this.boxCol.x += this.velocity.x;
 		this.boxCol.z += this.velocity.z;
-		this.velocity.z *= this.friction;
-		this.velocity.x *= this.friction;
+		//this.velocity.z *= this.friction;
+		//this.velocity.x *= this.friction;
 	}
 }
 
@@ -40,7 +44,6 @@ function handleItems(){
 			arrayDeItens[i].splice(i, i);
 		}
 		arrayDeItens[i].update();
-		arrayDeItens[i].desenhar();
 		estruturasBox = [arrayDeItens[i].shadow.x, arrayDeItens[i].shadow.y, arrayDeItens[i].shadow.w, arrayDeItens[i].shadow.h]
 		if(!col.AABB(estruturasBox, cameraBox) || arrayDeItens[i].visivel == false){
 			arrayDeItens[i].visivel = false;
@@ -62,7 +65,7 @@ function handleItems(){
 	
 	for(let i = y_grid; i < y_endGrid; i++){
 		for(let j = x_grid; j < x_endGrid; j++){
-			if(mapaAtual.items[i][j] != 0 && !mapaAtual.items[i][j].visivel){
+			if(mapaAtual.items[i][j] != 0 && !mapaAtual.items[i][j].visivel && !mapaAtual.items[i][j].isCollected){
 				arrayDeItens.push(mapaAtual.items[i][j]);
 				mapaAtual.items[i][j].visivel = true;
 			}

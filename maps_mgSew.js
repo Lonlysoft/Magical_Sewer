@@ -125,7 +125,7 @@ class LevelScenery{
 		for(let i = 0; i < this.altura; i++){
 			this.items.push(new Array());
 			for(let j = 0; j < this.largura; j++){
-				if(this.itemGrid[i][j] >= 0){
+				if(this.itemGrid[i][j] > 0){
 					this.items[i].push(new Item(
 							itemSource[ this.itemGrid[i][j] ][0], itemSource[ this.itemGrid[i][j] ][1], 
 							itemSource[ this.itemGrid[i][j] ][2], itemSource[ this.itemGrid[i][j] ][3], 

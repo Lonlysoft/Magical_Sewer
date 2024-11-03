@@ -83,6 +83,10 @@ const col = {
 	},
 	
 	interagir: function(entity, NPCarr){
+		
+		for(let i = 0; i < NPCarr.length; i++){
+			
+		}
 		return false;
 	},
 	
@@ -131,10 +135,18 @@ const col = {
 		}
 	},
 	
+	//itens
+	
 	moeda: function(entity, coin){
+		entity.money+=coin.value;
 		coin.visivel = false;
 		coin.isCollected = true;
-		entity.money+=coin.value;
+	},
+	
+	alimento: function(entity, obj){
+		obj.visivel = false;
+		obj.isCollected = true;
+		entity.calda.push(obj);
 	},
 	
 	deleteAtkBox: function(cu){
@@ -404,14 +416,19 @@ function colisionar(entity, num = -1){
 	
 	
 	//comparar colisoes com os itens presentes
-	let itensBox;
-	for(let i = 0; i < arrayDeItens.length; i++){
-		estruturasBox = [arrayDeItens[i].x, arrayDeItens[i].z, arrayDeItens[i].w, arrayDeItens[i].p];
-		if((col.AABB(playerBoxCol, estruturasBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, arrayDeItens[i].y)) || (col.AABB(playerBoxCol, estruturasBox) && isOnGround(arrayDeItens[i].y + arrayDeItens[i].h, entity.boxCol.y))){
-			 col[arrayDeItens[i].tipo](entity, arrayDeItens[i]);
+	if(num == -1){
+		let itensBox;
+		for(let i = 0; i < arrayDeItens.length; i++){
+			itensBox = [arrayDeItens[i].boxCol.x, arrayDeItens[i].boxCol.z, arrayDeItens[i].boxCol.w, arrayDeItens[i].boxCol.p];
+			if(col.AABB(playerBoxCol, itensBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, arrayDeItens[i].boxCol.y)){
+				console.log("c")
+				col[arrayDeItens[i].tipo](entity, arrayDeItens[i]);
+				if(arrayDeItens[i].equivalente == "coletavelinstantaneo"){
+					arrayDeItens.splice(i, i);
+				}
+			}
 		}
 	}
-	
 	
 	let mapBoxCol;
 	let waterBoxCol;

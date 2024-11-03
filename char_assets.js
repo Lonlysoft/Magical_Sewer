@@ -70,6 +70,7 @@ const chefes = [
 
 //ID, nome, valor, tipo, equivalente, w, h, p, x, y, z
 const ITEMS = [
+	[],
 	[0, 1, "moeda", "moeda", "coletavelinstantaneo", 20, 20, 20],
 	[1, 50, "hambúrguer", "alimento", "consumivel", 20, 20, 20],
 	[2, 100, "bolo", "alimento", "consumivel", 20, 20, 20],
