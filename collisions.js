@@ -135,11 +135,28 @@ const col = {
 		}
 	},
 	
+	receiveItem(entityCol, itemArr){
+		let arrayCol = [entityCol.x, entityCol.z, entityCol.w, entityCol.p];
+		let switcher;
+		for(let i = 0; i < itemArr.length; i++){
+			let arrayColItens = [itemArr[i].boxCol.x, itemArr[i].boxCol.z, itemArr[i].boxCol.w, itemArr[i].boxCol.p]
+			if(this.AABB(arrayCol, arrayColItens)){
+				switcher = itemArr[i];
+				itemArr[i] = itemArr[itemArr.length-1]
+				itemArr[itemArr.length-1] = switcher;
+				itemArr.pop();
+				return switcher;
+			}
+		}
+		return 0;
+	},
+	
 	//itens
 	
 	moeda: function(entity, coin){
 		entity.money+=coin.value;
 		coin.visivel = false;
+		particles(ctx, coin);
 		coin.isCollected = true;
 	},
 	
@@ -210,6 +227,9 @@ const col = {
 		this.right(entity, cube)
 		this.bottom(entity, cube);
 	},
+	solidObject: function(entity, cube){
+		this.solid(entity, cube.boxCol);
+	},
 	rampaNORTE: function(entity, cube){
 		this.top(entity, cube)
 		this.left(entity, cube)
@@ -277,6 +297,7 @@ const col = {
 	},
 	top: function(entity, cube){
 		if(entity.boxCol.z + entity.boxCol.p > cube.z && entity.boxCol.oldZ + entity.boxCol.p <= cube.z){
+			entity.onGround = true;
 			entity.velocity.z = 0;
 			entity.boxCol.z = cube.z - entity.boxCol.p - MAGIC_OFFSET;
 			return true;
@@ -420,8 +441,7 @@ function colisionar(entity, num = -1){
 		let itensBox;
 		for(let i = 0; i < arrayDeItens.length; i++){
 			itensBox = [arrayDeItens[i].boxCol.x, arrayDeItens[i].boxCol.z, arrayDeItens[i].boxCol.w, arrayDeItens[i].boxCol.p];
-			if(col.AABB(playerBoxCol, itensBox) && isOnGround(entity.boxCol.y + entity.boxCol.h, arrayDeItens[i].boxCol.y)){
-				console.log("c")
+			if(col.AABB(playerBoxCol, itensBox) && isOnGround(entity.WorldPos.y, arrayDeItens[i].boxCol.y)){
 				col[arrayDeItens[i].tipo](entity, arrayDeItens[i]);
 				if(arrayDeItens[i].equivalente == "coletavelinstantaneo"){
 					arrayDeItens.splice(i, i);
@@ -436,8 +456,6 @@ function colisionar(entity, num = -1){
 	for(let j = x_intro; j < x_end; j++){
 		for(let i = y_intro; i < y_end; i++){
 			if(entity.WorldPos.y < mapaAtual.limites[i][j].y){
-				let renderPlusX = j * TILE_SIZE - Camera.x + canvas.width*0.5 - Camera.w*0.5;
-				let renderPlusY = i * TILE_SIZE - Camera.y + canvas.height*0.5 - Camera.h*0.5; 
 				mapBoxCol = [mapaAtual.limites[i][j].x, mapaAtual.limites[i][j].z, TILE_SIZE, TILE_SIZE];
 				if(col.AABB(playerBoxCol, mapBoxCol)){
 					col[mapaAtual.limites[i][j].tipo](entity, mapaAtual.limites[i][j])
@@ -468,18 +486,6 @@ function isBellowGround(entitY, structurY){
 	return entitY >= structurY;
 }
 
-function currGroundConjunct(entity, arr, curr){
-	let arrArr;
-	let entityArr = [entity.boxCol.x, entity.boxCol.z, entity.boxCol.w, entity.boxCol.p]
-	for(let i = 0; i < arr.length; i++){
-		arrArr = [arr[i].x, arr[i].z, arr[i].w, arr[i].p];
-		if(col.AABB(entity, arrArr)){
-			entity.velocity.y = 0;
-			return arr[i].y;
-		}
-	}
-	return curr;
-}
 
 function handleYcoords(entity){
 	//entity.pontoCentral[1] -= entity.velocity.y;
@@ -490,7 +496,12 @@ function handleYcoords(entity){
 	let right = mapaAtual.limites[WorldToGrid(entity.boxCol.z+entity.boxCol.p, TILE_SIZE)][WorldToGrid(entity.boxCol.x, TILE_SIZE)].y;;
 	let currLim = mapaAtual.limites[WorldToGrid(entity.WorldPos.z, TILE_SIZE)][WorldToGrid(entity.WorldPos.x, TILE_SIZE)].y;
 	//não é a melhor forma de fazer isso pois é 4*O(N) todos os frames.
-	
+	let solidObjectArray = []
+	for(let i = 0; i < arrayDeItens.length; i++){
+		if(arrayDeItens[i].tipo == "solidObject"){
+			solidObjectArray.push(arrayDeItens[i]);
+		}
+	}
 	if((!isOnGround(entity.WorldPos.y, top) && !isOnGround(entity.WorldPos.y, left) && !isOnGround(entity.WorldPos.y, right) && !isOnGround(entity.WorldPos.y, bottom))){
 		entity.velocity.y -= entity.gravidade;
 		entity.onGround = false;

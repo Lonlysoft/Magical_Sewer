@@ -18,6 +18,8 @@ class Ser{
 		this.boxCol = new Box(undefined, undefined, undefined, largura, altura, profundidade);
 		this.velocity = {x: 0, y: 0, z: 0};
 		this.friction = 0.4;
+		this.estaColidindo = false; //feito para checar se tem algum item ou inimigo colidindo pra calcular o y.
+		this.estaColidindoCom = null;
 		
 		this.direcao = 1;
 		this.grapho = document.querySelector(HTMLsrc);
@@ -36,6 +38,7 @@ class Ser{
 		this.shadow = {
 			x: this.x, y: this.y+this.z, w: this.w, h: this.p+this.h
 		};
+		this.onGround = false;
 	}
 	
 	andar(axis){
@@ -74,7 +77,9 @@ class Ser{
 	setWest(x){
 		this.boxCol.x = x - this.boxCol.w - MAGIC_OFFSET;
 	}
-	
+	updateSuper(){
+		this.onGround = false;
+	}
 }
 
 class Protagonista extends Ser{
@@ -83,7 +88,6 @@ class Protagonista extends Ser{
 		super(Nome, HP, ATK, DEF, VMIN, VMAX, altura, largura, profundidade, HTMLsrc);
 		this.STR = VMIN;
 		this.JPOW = JMAX;
-		this.onGround = true;
 		this.nadando = false;
 		this.podeTomarDano = true;
 		this.calda = [];
@@ -101,6 +105,7 @@ class Protagonista extends Ser{
 	}
 	//important
 	update(){
+		this.updateSuper();
 		this.boxCol.x += this.velocity.x;
 		this.boxCol.z += this.velocity.z;
 		if( checkPontoCentral() == false ){
@@ -120,7 +125,9 @@ class Protagonista extends Ser{
 		ctx.fillStyle = "teal"
 		
 		ctx.fillRect(this.pontoCentral[0]-this.boxCol.h*0.5, this.pontoCentral[1]+this.boxCol.p*0.5-this.boxCol.h, this.boxCol.h, this.boxCol.h);
-		
+		if(this.mao != 0){
+			this.mao.desenhar();
+		}
 	}
 	
 	spawnInRelevo(x, y){
@@ -143,18 +150,8 @@ class Protagonista extends Ser{
 			}
 		}
 	}
-	
-	//RPG alikes
-	equip(tool){
-		for(let d = 0; d < this.calda.length; d++){
-			
-			this.equipamentos[idSearchType(tool.type)] = nomeDoEquipamento;
-		}
-	}
 	atacar(){
 		col.createAtkBox(this.boxCol, this.ATKbox, this.direcao);
-		ctx.fillStyle = "#f00"
-		ctx.fillRect(WorldToScreen1D(this.ATKbox.x, Camera.x), WorldToScreen1D(this.ATKbox.z - this.ATKbox.y, Camera.y), this.ATKbox.w, this.ATKbox.h);
 		let entity1Box = [this.ATKbox.x, this.ATKbox.z, this.ATKbox.w, this.ATKbox.p]; let entity2box = new Array(4);
 		for(let i = 0; i < arrayDeInimigos.length; i++){
 			entity2box[0] = arrayDeInimigos[i].boxCol.x;
@@ -190,8 +187,13 @@ function tomarDano(entity1, entity2){
 
 const skillSet = {
 	hold: function(entity){
-		entity.inventory[2] = receiveCollidingItem();
-		emtity.inventory[3] = null;
+		entity.mao = col.receiveItem({x: entity.boxCol.x+entity.boxCol.w, y: entity.boxCol.y, z: entity.boxCol.z+entity.boxCol.p, w: entity.boxCol.w, h: entity.boxCol.h, p: entity.boxCol.p}, arrayDeItens);
+		if(entity.mao != 0){
+			entity.holdingObject = true;
+		}
+		else{
+			entity.holdingObject = false;
+		}
 	},
 	hover: function(entity){
 		entity.velocity.y = 0;

@@ -59,6 +59,11 @@ function zoomOut(contexto){
 	contexto.scale(0.5, 0.5)
 }
 
+function particles(context, obj){
+	context.fillStyle = "#fff";
+	context.fillRect(obj.pontoCentral[0], obj.pontoCentral[0], 10, 10);
+}
+
 function drawShadow(contexto, entity, oppacity){
 	contexto.fillStyle = "#000"
 	contexto.globalAlpha = oppacity;

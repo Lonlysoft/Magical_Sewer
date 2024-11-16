@@ -74,6 +74,6 @@ const ITEMS = [
 	[0, 1, "moeda", "moeda", "coletavelinstantaneo", 20, 20, 20],
 	[1, 50, "hambúrguer", "alimento", "consumivel", 20, 20, 20],
 	[2, 100, "bolo", "alimento", "consumivel", 20, 20, 20],
-	[3, 0, "bloco puxavel", "bloco", "seguravel", TILE_SIZE, TILE_SIZE, TILE_SIZE],
+	[3, 0, "bloco puxavel", "solidObject", "solid", TILE_SIZE, TILE_SIZE, TILE_SIZE],
 	[4, 19, "martelo", "equipamento", "equipavel", 20, 20, 20]
 ]

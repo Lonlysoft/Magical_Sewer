@@ -118,6 +118,7 @@ var controlState = {
 	A: false,
 	B: false,
 	Y: false,
+	X: false,
 	start: false,
 	select: false,
 	zed: false,
@@ -139,6 +140,7 @@ function controlState_save(){
 	controlState.select = Controule.Botoeses[11].ativo;
 	controlState.zed = Controule.Botoeses[12].ativo;
 	controlState.L = Controule.Botoeses[15].ativo;
+	controlState.X = Controule.Botoeses[14].ativo;
 }
 
 var gameFeature = {
@@ -285,7 +287,10 @@ function action(type){
 				*/
 			}
 			if(Controule.Botoeses[14].ativo && controlState.X == false){
-				
+				if(personagemAtual.habilidades.includes("hold") && personagemAtual.habilidades.includes("release")){
+					console.log("hld");
+					personagemAtual.executarHabilidade("hold");
+				}
 			}
 			if(Controule.Botoeses[15].ativo && controlState.L == false){
 				if(!personagemAtual.onGround && personagemAtual.habilidades.includes("dashDive")){

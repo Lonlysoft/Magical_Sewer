@@ -87,13 +87,16 @@ class Inimigo extends Ser{
 		this.fieldOfVision = {x: this.boxCol.x, y: this.boxCol.y, z: this.boxCol.z, w: largura + 100, h: altura, p: profundidade + 100}
 		this.pol = 1; //só pode ser 1 ou -1
 		this.rayCast = undefined;
-		this.SpawnPos = {
-			x: x, y: y, z: z 
+		this.SpawnPos = { x: x, y: y, z: z };
+		this.shadow = {
+			x: x, y: y+z, w: largura, h: profundidade+altura };
 		}
-	}
 	update(){
+		this.updateSuper();
 		this.boxCol.x += this.velocity.x;
 		this.boxCol.z += this.velocity.z;
+		this.shadow.x = this.boxCol.x;
+		this.shadow.y = this.boxCol.z + this.boxCol.y;
 		let colArr = [this.boxCol.x, this.boxCol.z, this.boxCol.w, this.boxCol.p, this.boxCol.y, this.boxCol.h];
 		this.AI();
 		this.pontoCentral[0] = WorldToScreen1D(this.WorldPos.x, Camera.x, Camera.w/2 - CentroDaTela[0]);

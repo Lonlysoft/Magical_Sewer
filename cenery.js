@@ -32,6 +32,9 @@ var scenery = {
 		for(let i = 0; i < arrayDeInimigos.length; i++){
 			layers[arrayDeInimigos[i].layer].push(arrayDeInimigos[i]);
 		}
+		for(let i = 0; i < arrayDeItens.length; i++){
+			layers[arrayDeItens[i].layer].push(arrayDeItens[i]);
+		}
 		mapaAtual.drawFloor(2);
 		layers[personagemAtual.layer].push(personagemAtual);
 		

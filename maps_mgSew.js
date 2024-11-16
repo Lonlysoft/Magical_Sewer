@@ -100,7 +100,7 @@ class LevelScenery{
 							inimigos[this.enemyGrid[i][j]][6], inimigos[this.enemyGrid[i][j]][7], 
 							inimigos[this.enemyGrid[i][j]][8], inimigos[this.enemyGrid[i][j]][9],
 							inimigos[this.enemyGrid[i][j]][10],
-							j*TILE_SIZE, i*TILE_SIZE, this.relevoGrid[i][j]*TILE_SIZE
+							j*TILE_SIZE, this.relevoGrid[i][j]*TILE_SIZE, i*TILE_SIZE
 						)
 					);
 					
@@ -180,7 +180,6 @@ class LevelScenery{
 		if(y_grid < 0) y_grid = 0;
 		if(x_endGrid > this.largura) x_endGrid = this.largura;
 		if(y_endGrid > this.altura) y_endGrid = this.altura;
-		let objGrd;
 		
 		for(let i = x_grid; i < x_endGrid; i++){
 			for(let j = y_grid; j < y_endGrid; j++){

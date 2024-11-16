@@ -1,8 +1,8 @@
 const arrayDeItens = [];
 
 class Item{
-	constructor(ID, value, nome, tipo, equivalente = "consumivelInstantaneo", w, h, p, x, y, z){
-		this.boxCol = new Box(x, y, z, w, h, p);
+	constructor(ID, value, nome, tipo, equivalente, w, h, p, x, z, y){
+		this.boxCol = new Box(x, y + h, z, w, h, p);
 		this.ID = ID;
 		this.isCollected = false;
 		this.pontoCentral = new Array(2)
@@ -21,15 +21,16 @@ class Item{
 	}
 	desenhar(){
 		ctx.fillStyle = "#ff" + this.ID;
-		ctx.fillRect(this.pontoCentral[0], this.pontoCentral[1], this.boxCol.w, this.boxCol.h);
+		ctx.fillRect(this.pontoCentral[0], this.pontoCentral[1], this.boxCol.w, this.boxCol.p);
 	}
 	update(){
-		this.desenhar();
 		col.handleShadowCoords(this);
 		this.pontoCentral[0] = WorldToScreen1D(this.boxCol.x, Camera.x, Camera.w/2 - CentroDaTela[0]);
-		this.pontoCentral[1] = WorldToScreen1D(this.boxCol.z, Camera.y, Camera.h/2 - CentroDaTela[1]);
+		this.pontoCentral[1] = WorldToScreen1D(this.boxCol.z - this.boxCol.y, Camera.y, Camera.h/2 - CentroDaTela[1]);
 		this.boxCol.x += this.velocity.x;
 		this.boxCol.z += this.velocity.z;
+		this.shadow.x = this.boxCol.x;
+		this.shadow.y = this.boxCol.z + this.boxCol.y;
 		//this.velocity.z *= this.friction;
 		//this.velocity.x *= this.friction;
 	}
