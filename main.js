@@ -1,272 +1,356 @@
-//esse é o código do mágical sewer
 
-//variaveis globais para animações e outras coisas
-var frame = 0
-var frameaux = 0
-var upper = 0
-var oppaciter = 0
-var k = 0
-var graviter = 0;
-var guaxo_sta_process = 0
-var inimigosForamCarregados = false;
-var demandarTransicao = true
-
-const CentroDaTela = [canvas.width/2, canvas.height/2];
-
-//limpar a tela
-function limpar(contexto){
-	contexto.clearRect(0, 0, 1000, 1000)
+const Game = {
+	canvas: canvas,
+	ctx: ctx,
+	SCREEN_CENTER: [canvas.width*0.5, canvas.height*0.5],
+	currentMap: null,
+	levelName: "areaTeste",
+	LocationsProps: [null, undefined, "salaTeste"],
+	CurrentCharacter: null,
+	ItemArr: [],
+	NPCarr: [],
+	Scene: new Scenery(),
+	EnemyArr: [],
+	hasLoadedITEMs: false,
+	hasLoadedNPCs: false,
+	tileSetGraphics: document.getElementById("tilemap"),
+	buffer: undefined,
+	onDialog: false,
+	currentDialogType: 'none',
+	storyMoment: 0,
+	ischaracterMenud: false,
+	placeBuffer: 0,
+	requestTransition: true,
+	appearScreen: false,
+	alpha: 1,
+	setAndUpdateInimigos(){
+		this.currentMap.cleanupEnemies(Camera);
+		this.EnemyArr = this.currentMap.updateEnemies(Camera);
+		for(let i = 0; i < this.EnemyArr.length; i++){
+			this.EnemyArr[i].update();
+		}
+	},
+	setAndUpdateItems(){
+		this.currentMap.cleanupItems(Camera);
+		this.currentMap.updateVisibleItems(Camera);
+		for(let i = 0; i < this.ItemArr.length; i++){
+			this.ItemArr[i].update();
+		}
+	},
+	setAndUpdateNPCs(){
+		this.currentMap.cleanupNPCs(Camera, this.NPCarr);
+		this.currentMap.updateNPCs(Camera);
+		for(let i = 0; i < this.NPCarr.length; i++){
+			this.NPCarr[i].update();
+		}
+	},
+	moment: {
+		0: function(){
+			if(controls_canvas.width >= controls_canvas.height){
+				GameMoment = GameMomentSav;
+			}
+		},
+		characterMenu: function(){
+			//Ctrl.draw(Ctrl.ListProps, Ctrl.Btns, Ctrl.graph);
+			switch(UI.characterMenuItems.layer){
+				case 0: Ctrl.action(Game.CurrentCharacter, "characterMenu");
+				UI.characterMenuSubmenus["dismiss" + UI.characterMenuItems.optionList[UI.characterMenuItems.selectedOption] + ""](Game.CurrentCharacter);
+					break;
+				case 1:
+					Ctrl.action(Game.CurrentCharacter, UI.characterMenuItems.optionList[UI.characterMenuItems.selectedOption]);
+					UI.characterMenuSubmenus["start" + UI.characterMenuItems.optionList[UI.characterMenuItems.selectedOption] + ""](Game.CurrentCharacter);
+				break;
+			}
+			Ctrl.draw(Ctrl.ListProps, Ctrl.Btns, Ctrl.graph);
+			Ctrl.stateSave();
+			Game.Scene.draw(Game.currentMap, Game.CurrentCharacter, Game.ItemArr, Game.NPCarr);
+			
+			Game.ctx.globalAlpha = 0.5;
+			Game.ctx.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
+			Game.ctx.globalAlpha = 1;
+		},
+		preTile: function(){
+			
+		},
+		title:function(){
+			if(Game.requestTransition && !Game.appearScreen){
+				Game.alpha = BG.transition(Game.alpha, "coming", 0.1);
+				if(Game.alpha < 0){
+					Game.requestTransition = false;
+					Game.appearScreen = true;
+				}
+			}
+			UI.titleStart();
+			Game.ctx.fillStyle = "#000"
+			Game.ctx.fillRect(0,0,Game.canvas.width, Game.canvas.height);
+			Ctrl.draw(Ctrl.ListProps, Ctrl.Btns, Ctrl.graph);
+			Ctrl.action(null, "start");
+			Ctrl.stateSave();
+			if(Game.requestTransition && Game.appearScreen){
+				Game.alpha = BG.transition(Game.alpha, "going", 0.1);
+				if(Game.alpha >= 1){
+					Game.alpha = 1;
+					GameMomentSav = GameMoment;
+					GameMoment = Game.buffer;
+					Game.appearScreen = false;
+					UI.titleDismiss();
+				}
+			}
+		},
+		pause: function(){
+			Ctrl.draw(Ctrl.ListProps, Ctrl.Btns, Ctrl.graph);
+			Game.Scene.draw(Game.CurrentCharacter, Game.currentMap, Game.ItemArr, Game.NPCarr)
+			Ctrl.action(null, "pause");
+			Ctrl.stateSave();
+			Game.ctx.globalAlpha = 0.3;
+			Game.ctx.fillStyle = "#000";
+			Game.ctx.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
+			Game.ctx.globalAlpha = 1;
+		},
+		selectFunction: function(){
+			UI.scheduleStart();
+		},
+		newGame: function(){
+			GameMoment = "mainWorld";
+		},
+		resultsScreen: function(){
+			UI.results[GameMomentSav].start();
+			Ctrl.action(Null, "accept");
+		},
+		mainWorld: function(){
+			if(Game.requestTransition && !Game.appearScreen){
+				Game.alpha = BG.transition(Game.alpha, "coming", 0.1);
+				if(Game.alpha < 0){
+					Game.requestTransition = false;
+					Game.appearScreen = true;
+				}
+			}
+			UI.charWinStart();
+			if(!Game.Scene.hasDeclaired){
+				Game.Scene.declair(Game, Game.levelName, MAPS);
+				Game.CurrentCharacter = new Protagonist(Characters.Guaxo);
+				Game.Scene.hasDeclaired = true;
+			}
+			if(!Game.CurrentCharacter.isSpawn && Game.Scene.hasDeclaired){
+				Game.CurrentCharacter.isSpawn = Game.CurrentCharacter.spawn(Game.currentMap);
+			}
+			if(Game.ischaracterMenud){
+				GameMomentSav = GameMoment;
+				GameMoment = "characterMenu";
+			}
+			Game.setAndUpdateNPCs();
+			Game.setAndUpdateItems();
+			Game.setAndUpdateInimigos();
+			Game.Scene.draw(Game.currentMap, Game.CurrentCharacter, Game.ItemArr, Game.NPCarr, Game.EnemyArr);
+			if(Game.onDialog){
+				GameMomentSav = GameMoment;
+				GameMoment = "dialog"
+			}
+			Camera.moveTo(Game.CurrentCharacter.WorldPos.x, Game.CurrentCharacter.WorldPos.z, Game.CurrentCharacter.WorldPos.y);
+			Ctrl.action(Game.CurrentCharacter, "character");
+			Ctrl.stateSave();
+			Ctrl.draw(Ctrl.ListProps, Ctrl.Btns, Ctrl.graph);
+			Game.CurrentCharacter.update();
+			Col.main(Game.CurrentCharacter, Game.currentMap, -1);
+			UI.charWinUpdate(Clock, Game.CurrentCharacter);
+			if(timeCounter>=2000){
+				Clock.passTime();
+				timeCounter = 0;
+			}
+			debug();
+		},
+		dialog: function(){
+			Game.Scene.draw(Game.currentMap, Game.CurrentCharacter, Game.ItemArr, Game.NPCarr);
+			Ctrl.action(Game.dialogBox, "dialogs");
+			Ctrl.stateSave();
+			Ctrl.draw(Ctrl.ListProps, Ctrl.Btns, Ctrl.graph);
+			UI.dialogItems.writeText();
+		},
+		continueGame: function(){
+			if(Game.requestTransition && !Game.appearScreen){
+				Game.alpha = BG.transition(Game.alpha, "coming", 0.1);
+				if(Game.alpha < 0){
+					Game.requestTransition = false;
+					Game.appearScreen = true;
+				}
+			}
+			UI.loadStart();
+			Ctrl.draw(Ctrl.ListProps, Ctrl.Btns, Ctrl.graph);
+			
+			Ctrl.action(null, "load");
+			Ctrl.stateSave();
+			Game.ctx.fillStyle = "#000"
+			Game.ctx.fillRect(0, 0, Game.canvas.width, Game.canvas.height);
+			if(Game.requestTransition && Game.appearScreen){
+				Game.alpha = BG.transition(Game.alpha, "going", 0.1);
+				if(Game.alpha >= 1){
+					Game.alpha = 1;
+					GameMomentSav = "title";
+					GameMoment = Game.buffer;
+					Game.appearScreen = false;
+					UI.loadDismiss();
+				}
+			}
+		},
+		cookie: () => {
+			if(Game.requestTransition && !Game.appearScreen){
+				Game.alpha = BG.transition(Game.alpha, "coming", 0.1);
+				if(Game.alpha < 0){
+					Game.requestTransition = false;
+					Game.appearScreen = true;
+				}
+			}
+			let saveDataBriefing = getCookies();
+			UI.cookiesStart(saveDataBriefing);
+			Ctrl.draw(Ctrl.ListProps, Ctrl.Btns, Ctrl.graph);
+			//Ctrl.action(null, "loadCookies");
+			Ctrl.stateSave();
+			
+			if(Game.requestTransition && Game.appearScreen){
+				Game.alpha = BG.transition(Game.alpha, "going", 0.1);
+				if(Game.alpha >= 1){
+					Game.alpha = 1;
+					GameMomentSav = "title";
+					GameMoment = Game.buffer;
+					Game.appearScreen = false;
+					UI.loadCookiesDismiss();
+				}
+			}
+		},
+		sendFile: () => {
+			Ctrl.action(this.player, "load");
+			Ctrl.stateSave();
+			Ctrl.draw(Ctrl.ListProps, Ctrl.Btns, Ctrl.graph);
+		}
+	}
 }
-function zerar(contexto){
-	contexto.fillStyle = "#000"
-	contexto.fillRect(-1000, -1000, 2000, 2000);
+
+let GameMoment = 0;
+let GameMomentSav = 'title';
+let frame = 0
+let frameaux = 0
+
+let fps = 30, timeFrequency = 1000/fps;
+let timeCounter = 0, intervalSav = 0, deltaTime = 0;
+let intervalID;
+
+const SideBar = {
+	fullDOM: body.querySelector(".fullSideBar"),
+	DOM: body.querySelector(".sidebar"),
+	isHere: false,
+	fullScreenBtn: document.getElementById("fullscreen"),
+	musicVolume: document.querySelector("#music-volume"),
+	sfxVolume: document.querySelector("#sfx-volume"),
+	bringSideBar: document.getElementById("bring-sidebar"),
+	blankSpace: document.querySelector(".sidebar-blank-space")
 }
 
-/*---- M A I N ----*/
-const fps = 30
-const frequencia = 1000/fps
 function GameBonanza(){
-	
-	if(fps == 19){
-		errorMessagingEasterEgg();
+	TouchEvent();
+	GamePadEvent();
+	const fullScreenBtn = document.getElementById("fullscreen");
+	const fullScreenBtnIcon = fullScreenBtn.querySelector("svg");
+	SideBar.bringSideBar.addEventListener("click",
+		(event)=>{
+			SideBar.isHere = !SideBar.isHere;
+			if(SideBar.isHere){
+				SideBar.fullDOM.classList.remove("notHere");
+				setTimeout(()=>{SideBar.DOM.style.bottom = "0"}, 100);
+			}else{
+				SideBar.fullDOM.classList.add("notHere");
+				SideBar.DOM.style.bottom = "-40%"
+			}
+		}
+	);
+	SideBar.fullScreenBtn.addEventListener("click",
+		(event)=>{
+			SideBar.fullScreenBtn.classList.toggle("active");
+			if(DeviceInfo.fullScreen){
+				fullScreenBtnIcon.viewBox.baseVal.x = 0;
+				if(document.exitFullscreen)
+					document.exitFullscreen();
+				else if(document.webkitExitFullscreen)
+					document.webkitExitFullscreen();
+				else if(document.msExitFullscreen)
+					document.msExitFullscreen();
+				else if(document.mozExitFullscreen)
+					document.mozExitFullscreen();
+			} else {
+				fullScreenBtnIcon.viewBox.baseVal.x = 110;
+				if(body.requestFullscreen)
+					body.requestFullscreen();
+				else if(body.webkitRequestFullscreen)
+					body.webkitRequestFullscreen();
+				else if(body.msRequestFullscreen)
+					body.msRequestFullscreen();
+				else if(body.mozRequestFullscreen)
+					body.mozRequestFullscreen();
+			}
+			DeviceInfo.fullScreen = !DeviceInfo.fullScreen;
+		}
+	);
+	SideBar.blankSpace.addEventListener("click",
+		event => {
+			SideBar.DOM.style.bottom = "-40%";
+			SideBar.isHere = false;
+			setTimeout(()=>{ SideBar.fullDOM.classList.add("notHere") },900);
+		}
+	);
+	window.addEventListener("resize", resize);
+	resize();
+	//GamePlayLoop();
+	intervalID = setInterval(GamePlayLoop, timeFrequency);
+	//setTimeout(GamePlayLoop, timeFrequency);
+}
+
+const DeviceInfo = {
+	isMobile: false,
+	orientation: "landscape",
+	fullScreen: false
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+	DeviceInfo.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	if (!DeviceInfo.isMobile)
+		Ctrl.canvas.style.display = "none";
+		KeyBoardEvent();
+})
+
+function GamePlay(){
+	clear(Game.canvas, Game.ctx);
+	clear(BG.canvas, BG.ctx);
+	clear(Ctrl.canvas, Ctrl.ctx);
+	Game.moment[GameMoment]();
+	if(frame > fps){
+		frame = 0;
 	}
 	else{
-		//eu entendi. você pode deixar eventos e coisas assim fora do definir intervalo (loop do jogo). assim o código fica um pouco mais limpo... e com uma performance melhorada. tendo em vista que ele não irá adicionar um escutador de eventos todo quadro novo 
-		//adicione aq o event listener para keyBoard controls (é um if...else tá?)
-		//na verdade é mais simples de fazer de outra forma.
-		//EventoDeTeclado
-		EventoDeToq();
-		window.addEventListener("resize", resize);
-		resize();
-		window.setInterval(GamePlay, frequencia)
+		frame++;
 	}
-	
 }
 
-var interac1 = 0;
-var interac2 = 0;
-var scrnAppear = false;
-var personagemSelecionado = 0;
+function GamePlayLoop(){
+	try{
+		deltaTime = 1;
+		timeCounter += timeFrequency;
+		//setTimeout(GamePlayLoop, timeFrequency);
+		GamePlay();
+	} catch (error){
+		clearInterval(intervalID);
+		console.log(error);
+		body.innerHTML = errorScreen.icon;
+		body.innerHTML += errorScreen.text;
+		body.innerHTML += error.message;
+		body.innerHTML += "<a href = ''><button>reset game</button></a>";
+		body.style.color = "var(--bg-color)";
+		body.style.display = "flex";
+		body.style.flexDirection = "column";
+		body.style.justifyContent = "center";
+		body.style.alignItems = "flex-start";
+		body.style.padding = "20%"
+		body.style.boxSizing = "border-box"
+		body.style.height = "100vh";
+		
+	}
 
-//saving issues
-var GameMoment = 2;//são o codigo salas do game, cada um tem um.
-var GameMoment_Sav = 1;
-// modular o frame
-function GamePlay() {
-    limpar(ctx);
-    limpar(controls_ctx);
-    limpar(HUD_ctx);
-    zerar(ctx_BG);
-    limpar(ctx_Tr);
-
-    // Verificação de modo sleep (tela vertical)
-    if (GameMoment !== 4 && controls_canvas.width < controls_canvas.height) {
-        GameMomentSav = GameMoment;
-        GameMoment = 4;
-    }
-
-    // Objeto com os estados do jogo
-    const gameStates = {
-        splashScreenVynny: () => {
-            handleTransition({
-                whenAppearing: () => LOGOTYPE("Vynny"),
-                transitionInSpeed: 0.05,
-                transitionOutSpeed: 0.1,
-                nextState: -2
-            });
-        },
-        
-        splashScreenLonlysoft: () => {
-            handleTransition({
-                whenAppearing: () => LOGOTYPE("LONLYSOFT"),
-                transitionInSpeed: 0.1,
-                transitionOutSpeed: 0.1,
-                nextState: 1
-            });
-        },
-        
-        titleScreen: () => {
-            if (demandarTransicao && !scrnAppear) {
-                transicaoDeTela("vindo", 0.08);
-                if (alfa <= 0) {
-                    demandarTransicao = false;
-                    scrnAppear = true;
-                }
-            }
-            
-            UI.TelaTitulo();
-            desenharBotoes(Controule.Botoeses, Controule.graph);
-            action("start");
-            
-            if (demandarTransicao && scrnAppear) {
-                transicaoDeTela("indo", 0.1);
-                if (alfa >= 1) {
-                    alfa = 1;
-                    GameMomentSav = 2;
-                    GameMoment = 2;
-                    scrnAppear = false;
-                    UI.dismissTelaTitulo();
-                }
-            }
-        },
-        
-        mainGame: () => {
-            if (frame >= 30) Relogio.passarTempo();
-            
-            if (gameFeature.pause) {
-                GameMomentSav = GameMoment;
-                GameMoment = 9999;
-                return;
-            }
-            
-            if (!scenery.hasDeclaired) {
-                scenery.declair("ftest");
-                personagemAtual = personagens[personagemSelecionado];
-            }
-            
-            if (!inimigosForamCarregados) {
-                carregarInimigos();
-                inimigosForamCarregados = true;
-            }
-            
-            if (!personagemAtual.isSpawn && scenery.hasDeclaired) {
-                UI.nomeDoPersonagem.innerHTML = personagemAtual.Nome;
-                personagemAtual.isSpawn = personagemAtual.spawn();
-            }
-            
-            if (demandarTransicao) {
-                transicaoDeTela("vindo", 0.1);
-                if (alfa <= 0) {
-                    demandarTransicao = false;
-                }
-            }
-            
-            checarEntidades(arrayDeInimigos);
-            adicionarImigos();
-            
-            scenery.desenhar();
-            for (let i = 0; i < arrayDeInimigos.length; i++) {
-                arrayDeInimigos[i].update();
-                colisionar(arrayDeInimigos[i], i);
-                handleYcoords(arrayDeInimigos[i]);
-                col.handleShadowCoords(arrayDeInimigos[i]);
-            }
-            
-            desenharBotoes(Controule.Botoeses, Controule.graph);
-            action("personagem");
-            
-            personagemAtual.update();
-            colisionar(personagemAtual);
-            handleItems();
-            col.handleShadowCoords(personagemAtual);
-            handleYcoords(personagemAtual);
-            handleOld();
-            controlState_save();
-            Camera.moverPara(personagemAtual.WorldPos.x, personagemAtual.WorldPos.z, personagemAtual.WorldPos.y);
-            UI.endPausing();
-            UI.quickStating();
-        },
-        
-        gameOver: () => {
-            GameOverScreen();
-            action("end");
-        },
-        
-        pauseMenu: () => {
-            scenery.desenhar();
-            
-            HUD_ctx.fillStyle = "#000";
-            HUD_ctx.globalAlpha = 0.5;
-            HUD_ctx.fillRect(0, 0, 520, 520);
-            HUD_ctx.globalAlpha = 1;
-            
-            desenharBotoes(Controule.Botoeses, Controule.graph);
-            action("pause");
-            controlState_save();
-            
-            if (!gameFeature.pause) {
-                GameMoment = GameMomentSav;
-            }
-            
-            UI.pausing();
-            UI.endQuickStarting();
-        },
-        
-        characterSelect: () => {
-            UI.startCharactering();
-            desenharBotoes(Controule.Botoeses);
-            
-            if (demandarTransicao) {
-                if (alfa <= 0) {
-                    demandarTransicao = false;
-                } else {
-                    transicaoDeTela("vindo", 0.1);
-                }
-            }
-            
-            action("SLCT", "horiz", 3);
-        },
-        
-        sleepMode: () => {
-            if (controls_canvas.width >= controls_canvas.height) {
-                GameMoment = GameMomentSav;
-            }
-        },
-        
-        fileSelect: () => {
-            // Lógica para seleção de arquivo (novo jogo/carregar)
-        },
-        
-        defaultState: () => {
-            GameMoment = 1;
-        }
-    };
-
-    // Função auxiliar para lidar com transições
-    function handleTransition({whenAppearing, transitionInSpeed, transitionOutSpeed, nextState}) {
-        if (demandarTransicao && scrnAppear) {
-            transicaoDeTela("indo", transitionInSpeed);
-            if (alfa >= 1) {
-                alfa = 1;
-                GameMomentSav = nextState;
-                GameMoment = nextState;
-                scrnAppear = false;
-            }
-        }
-        
-        if (demandarTransicao && !scrnAppear) {
-            transicaoDeTela("vindo", transitionOutSpeed);
-            if (alfa <= 0) {
-                demandarTransicao = false;
-                scrnAppear = true;
-                window.setTimeout(() => { demandarTransicao = true }, 2000);
-            }
-        }
-        
-        whenAppearing();
-    }
-
-    // Executa o estado atual do jogo
-    const stateHandlers = {
-        [-3]: gameStates.splashScreenVynny,
-        [-2]: gameStates.splashScreenLonlysoft,
-        1: gameStates.titleScreen,
-        2: gameStates.mainGame,
-        3: gameStates.characterSelect,
-        4: gameStates.sleepMode,
-        5: gameStates.fileSelect,
-        9998: gameStates.gameOver,
-        9999: gameStates.pauseMenu
-    };
-
-    const handler = stateHandlers[GameMoment] || gameStates.defaultState;
-    handler();
-
-    // Atualização do frame
-    if (frame >= 30) {
-        frame = 0;
-        frameaux = frameaux >= 180 ? 0 : frameaux + 1;
-    } else {
-        frame++;
-    }
 }

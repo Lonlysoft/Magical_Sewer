@@ -1,79 +1,105 @@
-
-
-const personagens = [
-	new Protagonista(
-		"Guaxo", //nome
-		400, //HP
-		20, //ATK
-		20, //DEF
-		2, //ACL
-		10, //VMAX
-		33, //Jump max
-		10, //inventory size
-		24,//90, //altura do bixo
-		14, //largura
-		14, //profundidade (n tem nada a ver com a historia)
-		["dashDive", "hold"],
-		"#Guaxo" //argumento pro querySelector
-	),
-	new Protagonista(
-		"Raty",
-		400, //HP
-		20, //ATK
-		15, //DEF
-		1, //ACL
-		20, //VMAX
-		60, //JMAX
-		5, //inventario
-		90,
-		58,
-		58,
-		["hold"],
-		//habilidade especial
-		"#raty"
-	),
-	new Protagonista(
-		"Dante",
-		999,
-		99,
-		50,
-		6,
-		15,
-		60,
-		10000,
-		30,
-		200,
-		["hold", "dashDive", "fly"],
-		"#Dante"
-	)
-];
-
-const inimigos = [
-	//nome, ID, HP, ATK, DEF, ACL, VMAX, H, W, P
-	/*
-	["template", ID, HP, ATK, DEF, ACL, VMAX, ALT, LARG, PROF, Comp],
-	*/
-	["slug", 0, 100, 100, 100, 1, 7, 40, 40, 20, "nothing"],
-	["Rotund", 1, 10, 10, 10, 10, 10, 10, 10, 10, "linearZ"],
-	["MIXXANT", 2, 10, 10, 10, 10, 10, 10, 10, 10, "follow"],
-	["Raposisto", 3, 8, 3, 4, 5, 8, 8, 9, 30, 30, "notice"],
-	["MadRodent", 4, 5, 5, 5, 5, 7, 9, 5, 7, "rampage"],
-	["BinkyPipe", 4, 4, 4, 6, 7, 80, 90, 80, 67, "loop"],
-	["PittyPits", 6, 6, 6, 78, 78, 89, 78, 9, 90, "randompath"]
-];
-
-const chefes = [
-	//chefoes 
-	["CreinMouse", 0, 1000, 57, 90, 2, 9, 200, 200, 200, "specialMouseBehavior"],
-	["KitStreza", 1, 10000, 1659, 999, 4, 30, 100, 30, 30, "specialKitsune"]
-];
-
-//ID, nome, valor, tipo, equivalente, w, h, p, x, y, z
-const ITEMS = [
-	[],
-	[0, 1, "moeda", "moeda", "coletavelinstantaneo", 20, 20, 20],
-	[1, 50, "hambúrguer", "alimento", "consumivel", 20, 20, 20],
-	[2, 100, "bolo", "alimento", "consumivel", 20, 20, 20],
-	[3, 0, "bloco puxavel", "solidObject", "solid", TILE_SIZE, TILE_SIZE, TILE_SIZE],
-	[4, 19, "martelo", "equipamento", "equipavel", 20, 20, 20]
-]
+const Characters = {
+	Guaxo:{
+		name: "Guaxo",
+		age: 40,
+		min_speed: 2,
+		max_speed: 6,
+		jump_power: 35,
+		inventory: 10,
+		height: TILE_SIZE*1.5,
+		width: TILE_SIZE*0.9,
+		dept: TILE_SIZE*0.9,
+		skills: ["hold", "release", "dashDive", "eatAnything", "putAway"],
+		htmlSrc: "#guaxoSpriteSheet",
+		animations: {
+			walk: {
+				type: "infinite",
+				imageX: [1, 2, 1, 0, 1, 2, 1, 0],
+				timing: [3, 3, 3, 3, 3, 3, 3, 3],
+				isMirrored: [0, 0, 0, 0, 1, 1, 1, 1]
+			},
+			walkDifferent: {
+				type: "infinite",
+				imageX: [3, 0, 5, 0],
+				timing: [5, 4, 5, 4],
+				isMirrored: null
+			},
+			still: {
+				type: "infinite",
+				imageX: [0],
+				timing: [3],
+				isMirrored: null
+			},
+			jump: {
+				type: "linear",
+				imageX: [3, 4],
+				timing: [2, 4],
+				isMirrored: null
+			},
+			stillHold:{
+				type: "infinite",
+				imageX: [5],
+				timing: [3],
+				isMirrored: null
+			},
+			walkHold:{
+				type: "infinite",
+				imageX: [5, 6, 7, 6, 5, 6, 7, 6],
+				timing: [3, 3, 3, 3, 3, 3, 3, 3],
+				isMirrored: [0, 0, 0, 0, 1, 1, 1, 1]
+			},
+			walkDifferentHold:{
+				type: "infinite",
+				imageX: [7, 8, 9, 8, 7],
+				timing: [3, 3, 3, 3, 3],
+				isMirrored: null,
+			},
+			jumpHold: {
+				type: "linear",
+				imageX: [8, 9],
+				timing: [2, 4],
+				isMirrored: null
+			},
+			crouch: {
+				type: "linear",
+				imageX: [10],
+				timing: [12],
+				isMirrored: null
+			},
+			diving: {
+				type: "linear",
+				imageX: [10],
+				timing: [12],
+				isMirrored: null
+			}
+		},
+		relationships: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+	},
+	Raty: {
+		name: "Raty",
+		age: 40,
+		min_speed: 2,
+		max_speed: 6,
+		jump_power: 35,
+		inventory: 4,
+		height: TILE_SIZE*2,
+		width: TILE_SIZE*2,
+		dept: TILE_SIZE*2,
+		skills: ["hold", "release", "smartTail", "putAway", "putAway"],
+		htmlSrc: "#RatySpriteSheet",
+		animations: {
+			walk: ["infinite", 1, 1, 1, 1, 1, 0, 0, 0, 0, "m", 1, "m", 1, "m", 1, "m", 1, "m", 1, 0, 0, 0, 0],
+			walkDifferent: ["infinite", 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0],
+			still: ["infinite", 0],
+			jump: ["linear", 2, 2, 1, 1, 1, 1, 1],
+			clean: ["linear", 3, 3, 3, 3, 4, 4, 4, 4],
+			stillHold: ["infinite", 4],
+			walkHold: ["infinite", 4, 4, 4, 4, 5, 5, 5, 5, 4, 4, 4, 4, "m", 5, "m", 5, "m", 5, "m", 5],
+			walkDifferentHold: ["infinite", 5, 5, 5, 5, 5, 4, 4, 4, 4, 6, 6, 6, 6, 6, 4, 4, 4, 4],
+			jumpHold: ["linear", 5],
+			diving: ["linear", 9],
+			crouch: ["linear", 9],
+			eating: ["linear", 8, 8, 8, 8, 8, 8, 8, 8, 0]
+		}
+	}
+}

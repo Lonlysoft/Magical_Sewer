@@ -1,234 +1,222 @@
-@keyframes blinking{
-	0%{
-		opacity: 100%;
-	} 50% {
-		opacity: 0%;
-	} 100% {
-		opacity: 100%;
-	}
-}
-
-@keyframes ballForm{
-	0%{
-		transform: scale(0);
-	} 100% {
-		transform: scale(1);
-	}
-}
-
-.pangolin{
-	font-family: 'pangolin', serif;
-	font-weight: 400;
-}
-
-.notHere{
-	display: none;
-}
-
-.flex-center{
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-
-.inGameUI{
-	width: 100vh;
-	height: 100vh;
-}
-
-.HUD, .OutGameMenus{
-	width: 100%;
-	height: 100%;
-	color: white;
-	position: relative;
-}
-
-.glassy{
-	background: linear-gradient(135deg, #fff8 20%, #0046 80%);
-	box-shadow: 3px 3px 5px #000;
-	color: #fff;
-	border-top: 1px solid #fff;
-	border-left: 1px solid #fff;
-	backdrop-filter:blur(7px);
-}
-
-/*barra de vida do personagem*/
-
-.charWin {
-	padding: 2.5%;
-	border-radius: 10px;
-	position: absolute;
-	bottom: 5%;
-	left: 5%;
-	display: none;
-	justify-content: center;
-	align-items: center;
-	gap: 5%;
-}
-
-.charWin__HPbar{
-	height: 100%;
-	border-radius: 5px;
-	background-color: #0c0;
-}
-
-.imgIcon{
-	width: 2em;
-	height: 2em;
-	border-radius: 50%;
-	border: 1px solid white
-}
-
-.HUD__barraDeVida{
-	width: 4em;
-	height: 1em;
-	border-radius: 6px;
-	border: 1px solid #fff;
-}
-
-.nomePersonagem{
-	font-size: 0.75em;
-	font-weight: 700;
-	font-family: "kindSans", arial;
-}
-
-
-/* menu de pausa */
-.pauseMenu{
-	padding: 2.5%;
-	border-radius: 10px;
-	position: absolute;
-	bottom: 5%;
-	left: 5%;
-	display: none;
-	justify-content: center;
-	align-items: center;
-}
-
-.it{
-	width: 2em;
-	height: 2em;
-	border-radius: 50%;
-	border: 1px solid #fff;
-	margin-right: 0.5em;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-}
-
-/* tela de selecao de personagens */
-
-.container__selectCharacters{
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	gap: 1em;
-}
-
-.container__selectCharacters .unit{
-	width: 35%;
-	padding: 1em;
-	border-radius: 1em;
-}
-
-.primary{
-	margin: 0 .5em;
-	text-align: center;
-}
-
-.button__body{
-	padding: 0.5em;
-	margin: .5em;
-	text-align: center;
-	border-radius: .5em;
-	border: 2px solid #fff
-	width: 5em;
-}
-
-.container__selectCharacters .unit img{
-	width: 100%;
-}
-
-.it svg{
-	width: 70%;
-	height: 70%;
-}
-
-.it.selecionado{
-	box-shadow: 0 0 10px #fff;
-}
-
-.inventario{
-	max-width: 10em;
-	flex-direction: column;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	column-count: 2;
-}
-
-.inventItem{
-	margin: .25em;
-	
-}
-
+/* title screen */
 .titleScreen{
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	min-width: 100%;
-	min-height: 100%;
 	display: none;
-	align-items: center;
-	justify-content: center;
 	flex-direction: column;
-	overflow: hidden;
-}
-
-.titleScreen .titleLogo{
-	text-shadow: 0 1px 0 #aaa, 0 2px 0 #aaa, 0 3px 0 #aaa, 0 4px 0 #aaa;
-	font-size: 4em;
-	margin-top: 0;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
 }
 
 .titleScreen img{
-	border-radius: 50%;
-	max-width: 50%;
-	max-height: 50%;
-	animation: ballForm 3s ease-out 1;
-	
+	max-width: 90%;
+	margin-top: 1em;
 }
 
+.titleLogo{
+	font-size: 5vh;
+	margin: 0;
+	color: var(--bg-color);
+}
+.titleCommand{
+	background: var(--bg-glassy-gradient);
+	opacity: 50%;
+	color: var(--bg-color);
+	padding: 0.5em 1.5em;
+	border: 1px dashed var(--bg-color);
+	border-radius: 5px;
+}
+.titleCommand.selected{
+	transition: color 0.4s, transform 0.4s, opacity 0.5s;
+	opacity: 100%;
+	border: 1px solid var(--bg-color);
+	transform: translate(0, -0.2em);
+	box-shadow: 0.2em 0.2em 0 #000;
+}
 .titleScreen footer{
-	width: 70%;
-	font-size: 0.5em;
+	color: var(--bg-color);
 	text-align: center;
+	margin: 2em;
 }
 
-.titleScreen .titleCommand{
-	animation: blinking 3s linear infinite;
+/* container saving */
+.container__saving{
+	padding: 1em;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	display: none;
+	gap: 0.2em;
+	color: var(--font-color);
+}
+.container__saving div{
+	padding: 0.5em 1em;
+	color: var(--font-color);
+	border: 1px solid var(--font-color);
+}
+.container__saving div.selected{
+	color: var(--bg-color);
+	border: none;
+	background: var(--font-color);
+	transition: color 0.4s, border 0.4s;
 }
 
-balaoDeTexto{
-	position: absolute;
-	top: 0;
-	left: 0;
-	background: #fff;
-	border-radius: 50%;
-	padding: 2em;
-	border: 2px solid #000;
+/*MainWorld UI*/
+.charWin{
+	display: none;
 }
-balaoDeTexto::after{
+.quickstats{
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	top: 4%;
+	left: 50%;
+	transform: translate(-50%, 0);
+	gap: 1em;
+	padding: 1em;
+}
+.characterQuickInfo{
+	bottom: 5%;
+	left: 50%;
+	transform: translateX(-50%);
+	gap: 0.5em;
+}
+
+/*character menu*/
+.characterMenu{
+	display: none;
+	top: 25%;
+	left: 50%;
+	justify-content: space-between;
+	align-items: center;
+	min-width: 90%;
+	max-width: 100%;
+	padding: 1em;
+	gap: 1em;
+	transform: translate(-50%, -50%);
+	z-index: 6;
+}
+.characterMenu::before{
+	content: '';
+	z-index: -1;
 	position: absolute;
-	content: 'Guaxo';
-	top: 0;
+	width: 100%;
+	height: 25%;
+	bottom: 20%;
 	left: 0;
-	background: #fff;
+	background: var(--dynny-color);
+	border-radius: 50px;
+	overflow: hidden;
+}
+.it:before{
+	position: absolute;
+	content: "";
+	z-index: 0;
+	bottom: 1.25em;
+	width: 3em;
+	height: 1em;
+	background: #000;
 	border-radius: 50%;
-	padding: .5em 1em;
-	font-size: .7em;
-	border: 2px solid #000;
+	opacity: 50%;
+}
+.characterMenu .description{
+	width: 75%;
+	text-shadow: 0 1px 0 #000, 0 2px 0 #000, 0 3px 0 #000, 0 4px 0 #000;
+	color: white;
+	text-align: right;
+	font-size: 2em;
+	font-family: "classicalComic", sans-serif;
+}
+.characterMenu .it.selected{
+	transform: translate(0, -2px);
+}
+.characterMenu .it.selected:before{
+	position: absolute;
+	content: "";
+	z-index: 0;
+	left: 0;
+	width: 3em;
+	height: 3em;
+	background: var(--Dynny-color);
+	border-radius: 50%;
+}
+
+/*dialog*/
+.dialogs{
+	position: absolute;
+	display: none;
+	transform: scale(0.2);
+	transition: transform 0.6s;
+}
+.comic{
+	font-family: "playpenSans-regular", "classicComic", sans-serif;
+	background: #fff;
+	border-radius: 1em;
+	border: 2px solid black;
+	padding: 0.5em;
+	box-shadow: 0 3px 0 #000;
+	box-shadow: 0 5px 0 #000;
+}
+.whoTalks{
+	font-weight: 900;
+}
+.speaking{
+	margin: 0;
+	padding: 1em;
+	color: #000;
+}
+.dialog-option{
+	padding-left: 1em;
+	position: relative;
+}
+.dialog-option.selected::before{
+	content: "";
+	width: 0.5em;
+	height: 0.5em;
+	background: #000; /*TODO: add Dynny/Protagonist cursor here*/
+	background-size: 100px 100px;
+	position: absolute;
+	top: 0.25em;
+	left: 0.25em;
+}
+
+.option.selected{
+	border: 1px dashed #000;
+}
+
+.bags{
+	width: 50%;
+	padding: 2vh;
+}
+.bags__item{
+	position: relative;
+	padding-left: 1.5em;
+}
+.bags__item.selected::after{
+	content: '';
+	width: 1em;
+	height: 1em;
+	background: var(--font-color);
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+
+.calendar{
+	width: 50%;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.HUD__HPnumber{
+	color: var(--bg-color);
+	font-size: 2em;
+}
+.money, .GameDate, .GameHour{
+	font-weight: 100;
+	color: var(--bg-color);
+	font-size: 2em;
+	text-shadow: 1px 1px 2px var(--font-color);
 }

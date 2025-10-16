@@ -1,60 +1,102 @@
-var canvas = document.getElementById("personagens")
-var ctx = canvas.getContext("2d")
-canvas.width = 520;
-canvas.height = 520;
+class Box{
+	constructor(x, y, z, width, height, dept){
+		this.x = x,
+		this.y = y,
+		this.z = z,
+		this.oldX = undefined,
+		this.oldY = undefined,
+		this.oldZ = undefined,
+		this.w = width,
+		this.h = height,
+		this.p = dept
+	}
+}
 
-class Ser{
-	constructor(NOME, HP, ATK, DEF, ACL, VMAX, altura, largura, profundidade, HTMLsrc){
-		this.Nome = NOME;
-		this.HP = HP; this.hp = HP;
-		this.ATK = ATK; this.DEF = DEF;
+class Being{
+	constructor(name, AGE, ACL, VMAX, height, width, dept, HTMLsrc, animations){
+		this.name = name;
+		this.HP = AGE*10; this.hp = AGE*10;
+		this.maxHunger = AGE*15;
+		this.maxStamina = AGE*10;
+		this.stamina = AGE*10;
+		this.solitude = 100;
+		this.maxSolitude = 1000;
+		this.maxJoy = 100;
+		this.joy = 50;
+		this.hunger = 45;
+		this.ATK = Math.floor(AGE/2); this.DEF = Math.ceil(AGE/2);
 		this.ACL = ACL; this.VMAX = VMAX;
-		this.constHP = HP;
+		this.constHP = AGE*10;
 		
 		this.isSpawn = false;
 		this.isAlive = true;
 		this.WorldPos = {x: undefined, y: undefined, z: undefined};
 		this.OriginPos = {x: undefined, y: undefined, z: undefined};
-		this.boxCol = new Box(undefined, undefined, undefined, largura, altura, profundidade);
+		this.boxCol = new Box(undefined, undefined, undefined, width/2, height, dept/2);
 		this.velocity = {x: 0, y: 0, z: 0};
 		this.friction = 0.4;
-		this.estaColidindo = false; //feito para checar se tem algum item ou inimigo colidindo pra calcular o y.
-		this.estaColidindoCom = null;
 		
-		this.direcao = 1;
+		
+		this.dir = "S";
+		this.doing = "still";
+		this.oldDoing = "still";
+		this.isWalking = {x: false, z: false};
+		this.onGround = true;
+		this.animationIndex = 0;
+		this.animTimer = 0;
+		this.anim = animations;
+		this.movementFlag = "walk";
+		this.isMirrored = false;
 		this.grapho = document.querySelector(HTMLsrc);
 		this.layer = 0;
 		this.sublayer = 0;
-		this.sombra = {x: this.boxCol.x, z: this.boxCol.z-this.boxCol.h};
-		this.pontoCentral = [canvas.width/2, canvas.height/2];
-		this.pulando = false;
+		this.shadow = {x: this.boxCol.x, z: this.boxCol.z-this.boxCol.h};
+		this.centralPoint = [canvas.width/2, canvas.height/2];
+		this.jumping = false;
 		this.sprite = {
-			w: 154,
-			h: 154
+			w: 192,
+			h: 192
 		};
-		this.gravidade = GRAVIDADE_NA_TERRA;
-		this.frameX;
-		this.frameY;
-		this.shadow = {
-			x: this.x, y: this.y+this.z, w: this.w, h: this.p+this.h
-		};
-		this.onGround = false;
+		this.gravity = GRAVITY_EARTH;
+		this.frameX = 0;
+		this.frameY = 0;
 	}
 	
-	andar(axis){
+	walk(axis){
+		this.isWalking[axis] = true;
 		if(this.velocity[axis] >= this.VMAX){
-			this.velocity[axis] = Number.parseInt(this.VMAX * this.pol);
+			this.velocity[axis] = Math.floor(this.VMAX *deltaTime * this.pol);
 		}
 		else if(this.velocity[axis] <= (this.VMAX *-1)){
-			this.velocity[axis] = Number.parseInt(this.VMAX * this.pol);
+			this.velocity[axis] = Math.floor(this.VMAX *deltaTime * this.pol);
 		}
 		else{
-			this.velocity[axis] += Number.parseInt(this.ACL * this.pol);
+			this.velocity[axis] += Math.floor(this.ACL* deltaTime* this.pol);
 		}
 	}
-	parar(axis){
+	run(axis){
+		this.isWalking[axis] = true;
+		if(this.velocity[axis] >= this.VMAX*2){
+			this.velocity[axis] = this.VMAX *2 * deltaTime * this.pol;
+		}
+		else if(this.velocity[axis] <= (this.VMAX *-1)){
+			this.velocity[axis] = this.VMAX*2 *deltaTime * this.pol;
+		}
+		else{
+			this.velocity[axis] += this.ACL* deltaTime* this.pol;
+		}
+	}
+	stop(axis){
+		this.isWalking[axis] = false;
+		if(this.onGround){
+			this.velocity[axis] *= this.friction;
+			this.velocity[axis] = Number.parseInt(this.velocity[axis]);
+		}
+	}
+	stopAbsolute(axis){
+		this.isWalking[axis] = false;
 		this.velocity[axis] *= this.friction;
-		this.velocity[axis] = Number.parseInt(this.velocity[axis])
+		this.velocity[axis] = Number.parseInt(this.velocity[axis]);
 	}
 	reset(){
 		this.hp = this.constHP;
@@ -77,190 +119,182 @@ class Ser{
 	setWest(x){
 		this.boxCol.x = x - this.boxCol.w - MAGIC_OFFSET;
 	}
-	updateSuper(){
-		this.onGround = false;
-	}
+	
+	
 }
 
-class Protagonista extends Ser{
-	constructor(Nome, HP, ATK, DEF, VMIN, VMAX, JMAX, calda, altura, largura, profundidade, skills, HTMLsrc){
-		//relacionado ao movimento
-		super(Nome, HP, ATK, DEF, VMIN, VMAX, altura, largura, profundidade, HTMLsrc);
-		this.STR = VMIN;
-		this.JPOW = JMAX;
-		this.nadando = false;
-		this.podeTomarDano = true;
-		this.calda = [];
-		this.mao = 0;
-		this.caldaMaxLength = calda;
-		this.money = 0;
+class Protagonist extends Being{
+	constructor(arg){
+		super(arg.name, arg.age, arg.min_speed, arg.max_speed, arg.height, arg.width, arg.dept, arg.htmlSrc, arg.animations);
+		this.dimen = {w: arg.width, h: arg.height, p: arg.dept};
+		this.STR = arg.min_speed;
+		this.JPOW = arg.jump_power;
+		this.isSwimming = false;
+		this.isSpecialSkilling = false;
+		this.isCrouching = false;
+		this.canTakeDamage = true;
+		this.tail = [];
+		this.hand = 0;
+		this.tailMaxLength = arg.inventory;
+		this.money = new Money(0);
 		this.xp = 0;
-		this.oldFznd = "still"
-		this.invensibilidade = false;
-		//relacionado à ataques e coisas.
-		this.ATKbox = {x: undefined, y: undefined, z: undefined, w: largura, h: altura, p: profundidade, type: "soco"};
-		this.habilidades = skills;
+		this.invensibility = false;
+		this.relationships = arg.relationships;
+		this.ATKbox = {x: undefined, y: undefined, z: undefined, w: arg.width, h: arg.height, p: arg.dept, type: "punch"};
+		this.skillList = arg.skills;
 		this.section = 0;
 		this.ID = 0;
+		this.holdingObject = false;
 	}
-	//important
 	update(){
-		this.updateSuper();
+		saveCoords(this.boxCol);
+		if(this.onGround && this.isSpecialSkilling){
+			this.isSpecialSkilling = false;
+		}
+		this.onGround = false;
 		this.boxCol.x += this.velocity.x;
 		this.boxCol.z += this.velocity.z;
-		if( checkPontoCentral() == false ){
-			this.pontoCentral[1]-=this.velocity.z;
-			this.pontoCentral[0]-=this.velocity.x;
+		this.WorldPos.y += this.velocity.y;
+		this.WorldPos.x = this.boxCol.x + this.boxCol.w*0.5;
+		this.WorldPos.z = this.boxCol.z + this.boxCol.p*0.5;
+		this.boxCol.y = this.WorldPos.y + this.boxCol.h;
+		this.shadow.x = this.boxCol.x;
+		this.shadow.z = this.boxCol.z-this.boxCol.h;
+		if( checkCentralPoint(this.centralPoint[0], this.centralPoint[1]) == false ){
+			this.centralPoint[1]-=this.velocity.z;
+			this.centralPoint[0]-=this.velocity.x;
 		}
-		if(this.invensibilidade){
-			window.setTimeout(()=>{this.invensibilidade = false}, 2000);
+		if(this.holdingObject && this.hand !== 0){
+			this.hand.centralPoint[0] = this.centralPoint[0];
+			this.hand.centralPoint[1] = this.centralPoint[1] - this.boxCol.h*0.8;
+	//		this.hand.update();
+		}
+		this.hp = limitateUp(this.hp, this.HP);
+		this.hunger = limitateUp(this.hunger, this.maxHunger);
+	}
+	draw(currentMap = Game.currentMap){
+		drawShadow(ctx, this, currentMap, 0.5);
+		let tailInFront = false;
+		this.frameY = directions.setFrameY[this.dir](this);
+		this.frameX = displayAnim(this);
+		if(this.grapho){
+			Game.ctx.drawImage(this.grapho,
+				this.frameX*this.sprite.w,
+				this.frameY*this.sprite.h,
+				this.sprite.w, this.sprite.h,
+				this.centralPoint[0]-this.boxCol.h*0.5,
+				this.centralPoint[1]-this.boxCol.h+this.boxCol.p,
+				this.boxCol.h, this.boxCol.h
+			);
+		} else {
+			Game.ctx.fillStyle = "teal";
+			Game.ctx.fillRect(
+				this.centralPoint[0]-this.boxCol.h*0.5,
+				this.centralPoint[1]-this.boxCol.h+this.boxCol.p,
+				this.boxCol.h, this.boxCol.h
+			);
+		}
+		if(this.isMirrored){//get back to normal state
+			mirrorateToAPoint(Game.ctx, this.centralPoint[0], this.centralPoint[1]);
+			this.isMirrored = false;
+		}
+		if(this.hand != 0){
+			this.hand.draw();
 		}
 	}
-	//isso é usado justamente pra qnd dà game over ou d
-	
-	//graphics
-	desenhar(){
-		//ctx.drawImage(this.grapho, this.frameX*this.sprite.w, this.frameY*this.sprite.h, this.sprite.w, this.sprite.h, this.pontoCentral[0]-this.boxCol.h*0.5, this.pontoCentral[1]-this.boxCol.h, this.boxCol.h, this.boxCol.h);
-		drawShadow(ctx, this, 1);
-		ctx.fillStyle = "teal"
+	interact(NPC__arr, item__arr){
+		let box = directions.setBox[this.dir](this);
+		ctx.fillStyle = "green";
+		ctx.fillRect(WorldToScreen1D(box[0], Camera.x, Camera.w/2 - Game.SCREEN_CENTER[0]), WorldToScreen1D(box[1], Camera.y, Camera.h/2 - Game.SCREEN_CENTER[1]), TILE_SIZE, TILE_SIZE);
+		for(let i = 0; i < NPC__arr.length; i++){
+			let this__box = [NPC__arr[i].boxCol.x, NPC__arr[i].boxCol.z, NPC__arr[i].boxCol.w, NPC__arr[i].boxCol.p];
+			if(isOnGround(this.WorldPos.y, NPC__arr[i].boxCol.y) && Col.AABB(box, this__box)){
+				const conditionalDto = {time: Clock.getDayLateness(), story: Game.storyMoment, relationship: this.relationships[NPC__arr[i].ID]};
+				Game.onDialog = true;
+				UI.dialogItems.object = chooseDialog(NPC__arr[i].dialog, conditionalDto);
+				UI.dialogItems.bufferAnimation = 0;
+				UI.dialogStart();
+			}
+		}
 		
-		ctx.fillRect(this.pontoCentral[0]-this.boxCol.h*0.5, this.pontoCentral[1]+this.boxCol.p*0.5-this.boxCol.h, this.boxCol.h, this.boxCol.h);
-		if(this.mao != 0){
-			this.mao.desenhar();
+		//to interact with the interactables items 
+		let interactables = item__arr.filter(
+			item =>{
+				return item.usage == "interact";
+			}
+		);
+		for(let i = 0; i < interactables.length; i++){
+			let this__box = [interactables[i].boxCol.x, interactables[i].boxCol.z, interactables[i].boxCol.w, interactables[i].boxCol.p];
+			if(isOnGround(this.WorldPos.y, interactables[i].boxCol.y) && Col.AABB(box, this__box)){
+				interactables[i].use(this);
+			}
 		}
 	}
-	
-	spawnInRelevo(x, y){
-		return mapaAtual.relevoGrid[y][x]*TILE_SIZE;
+	spawnInY(map, x, y){
+		return map.grndElGrid[y][x]*TILE_SIZE;
 	}
-	spawn(){
-		for(let i = 0; i < mapaAtual.altura; i++){
-			for(let j = 0; j < mapaAtual.largura; j++){
-				if(mapaAtual.beingGrid[i][j] == "p1"){
+	spawn(map){
+		for(let i = 0; i < map.height; i++){
+			for(let j = 0; j < map.width; j++){
+				if(map.beingGrid[i][j] == "p1"){
 					this.boxCol.x = j*TILE_SIZE;
 					this.boxCol.z = i*TILE_SIZE;
-					this.WorldPos.y = this.spawnInRelevo(j,i);
-					/*
-					this.WorldPos.x = this.boxCol.x+this.boxCol.w*0.5;
-					this.WorldPos.z = this.boxCol.z+this.boxCol.p*0.5;
-					this.boxCol.y = this.WorldPos.y+this.boxCol.h;
-					*/
+					this.WorldPos.y = this.spawnInY(map,j,i);
 					return true;
 				}
 			}
 		}
 	}
-	atacar(){
-		col.createAtkBox(this.boxCol, this.ATKbox, this.direcao);
-		let entity1Box = [this.ATKbox.x, this.ATKbox.z, this.ATKbox.w, this.ATKbox.p]; let entity2box = new Array(4);
-		for(let i = 0; i < arrayDeInimigos.length; i++){
-			entity2box[0] = arrayDeInimigos[i].boxCol.x;
-			entity2box[1] = arrayDeInimigos[i].boxCol.z;
-			entity2box[2] = arrayDeInimigos[i].boxCol.w;
-			entity2box[3] = arrayDeInimigos[i].boxCol.p;
-			if(col.AABB(entity1Box, entity2box)){
-				arrayDeInimigos[i].hp -= arrayDeInimigos[i].DEF - this.ATK
-			}
-		}
-		//window.setTimeout(()=>{col.deleteAtkBox(this.ATKbox)},800);
-		
+	learnSkill(skillName){
+		if(!this.skillList.includes(skillName))this.skillList.push(skillName);
 	}
-	setHabilidade(skill){
-		//ele recebe funcoes.
-		for(let i = 0; i < skill.length; i++){
-			this.habilidades.push(skill);
-		}
-	}
-	executarHabilidade(skillName){
-		if(this.habilidades.includes(skillName)) skillSet[skillName](this);
-	}
-}
-
-function tomarDano(entity1, entity2){
-	if(entity2.boxCol.y <= entity1.ATKbox.y && entity2.boxCol.y >= entity1.ATKbox.y + entity1.ATKbox.h){
-		let entity1Box = [entity1.ATKbox.x, entity1.ATKbox.z, entity1.ATKbox.w, entity1.ATKbox.p], entity2Box = [entity2.boxCol.x, entity2.boxCol.z, entity1.boxCol.w, entity.boxCol.p];
-		if(col.AABB(entity1Box, entity2Box)){
-			entity1.hp -= entity2.ATK - entity1.DEF;
-		}
+	doSkill(skillName){
+		if(this.skillList.includes(skillName))skillSet[skillName](this);
 	}
 }
 
 const skillSet = {
 	hold: function(entity){
-		entity.mao = col.receiveItem({x: entity.boxCol.x+entity.boxCol.w, y: entity.boxCol.y, z: entity.boxCol.z+entity.boxCol.p, w: entity.boxCol.w, h: entity.boxCol.h, p: entity.boxCol.p}, arrayDeItens);
-		if(entity.mao != 0){
+		entity.hand = Col.receiveItem(entity, Game.ItemArr);
+		if(entity.hand != 0){
 			entity.holdingObject = true;
 		}
 		else{
 			entity.holdingObject = false;
 		}
 	},
+	putAway: function(entity){
+		if(entity.tail.length < entity.tailMaxLength){
+			entity.tail.push(entity.hand);
+			entity.hand = 0;
+			entity.holdingObject = false;
+		}
+	},
 	hover: function(entity){
 		entity.velocity.y = 0;
 	},
+	release: function(entity){
+		//TODO: check if item is a food. if it is, the food will be discarted and play an animation of it getting destroyed.
+		if(entity.hand != 0){
+			entity.holdingObject = false;
+			const box = directions.setBox[entity.dir](entity);
+			entity.hand.isCollected = false;
+			entity.hand.boxCol.x = box[0]+TILE_SIZE*0.5-entity.hand.boxCol.w*0.5;
+			entity.hand.boxCol.z = box[1]+TILE_SIZE*0.5-entity.hand.boxCol.p*0.5;
+			entity.hand.boxCol.y = Game.currentMap.bounds[WorldToGrid(box[1], TILE_SIZE)][WorldToGrid(box[0], TILE_SIZE)].y
+			Game.currentMap.items[WorldToGrid(box[1], TILE_SIZE)][WorldToGrid(box[0], TILE_SIZE)] = entity.hand;
+			entity.hand = 0;
+		}
+	},
 	dashDive: function(entity){
 		if(!entity.onGround){
-			switch(entity.direcao){
-				case 1:
-					entity.velocity.z += 10;
-				break;
-				case 2:
-					entity.velocity.x += 10;
-				break;
-				case 3:
-					entity.velocity.z -= 10;
-				break;
-				case 4:
-					entity.velocity.x -= 10;
-				break;
-				case 5:
-					entity.velocity.x += 10;
-					entity.velocity.z += 10;
-				break;
-				case 6:
-					entity.velocity.z -= 10;
-					entity.velocity.x += 10;
-				break;
-				case 7:
-					entity.velocity.z -= 10;
-					entity.velocity.x -= 10;
-				break;
-				case 8:
-					entity.velocity.z += 10;
-					entity.velocity.x -= 10;
-				break;
-			}
+			directions.frontDash[entity.dir](entity, 20);
 		}
+	},
+	eatAnything: function(entity){
+		//entity.belly.push(entity.hand); //vore flerting 
+		entity.hunger = limitateDown(entity.hunger-25, 0);
+		entity.holdingObject = false;
+		entity.hand = 0;
 	}
 }
-
-function handleDamage(entity, entity2){
-	let hitBox = [entity.boxCol.x, entity.boxCol.z, entity.boxCol.w, entity.boxCol.p, entity.boxCol.y, entity.boxCol.h]
-	let atkBox = [entity2.ATKbox.x, entity2.ATKbox.z, entity.ATKbox.w, entity.ATKbox.p, entity.ATKbox.y, entity.ATKbox.h]
-	if(AABB3D(hitBox, atkBox)){
-		switch(enemyATKbox.type){
-			case "socoFraco":
-				entity.velocity.x += 8 * entity2.ATKbox.magnitude
-			break;
-			case "socoForte":
-				entity.velocity.x += 9;
-				entity.fazendo = "danoForte";
-				entity.hp -= entity2.ATK - entity.DEF;
-			break;
-			case "devorar"://nao vai ser usada aqui.
-				entity2.belly.push(entity2);
-				deletarEntidade(entity2, arrayDeInimigos);
-			break;
-			case "fogo":
-				entity.velocity.y += 9;
-			break;
-			case "gosma":
-				entity.friction = 0.9;
-			break;
-		}
-	}
-}
-
-//variáveis gerais
-//meio que ela vai precisar ser global porque ela vai precisar
-var personagemAtual;

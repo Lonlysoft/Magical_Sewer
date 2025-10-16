@@ -1,158 +1,202 @@
-var HUD_canvin = document.getElementById("HUD");
-var HUD_ctx = HUD_canvin.getContext("2d");
-HUD_canvin.width = 520;
-HUD_canvin.height = 520;
-
 const UI = {
 	titleDOM: document.querySelector(".titleScreen"),
-	charsDOM: document.querySelector(".container__selectCharacters"),
-	isCharSelectHere: false,
-	isTitleHere: false,
-	isInventoryHere: false,
-	isInventaring: false,
-	isQuickStatsHere: false,
-	isCharAtualizou: false,
-	isPausing: false,
-	isDialogando: false,
-	HUD_HP: document.querySelector(".charWin"),
-	HP_bar: document.querySelector(".charWin__HPbar"),
-	nomeDoPersonagem: document.querySelector(".charWin .quickStats .nomePersonagem"),
-	pause: document.querySelector(".pauseMenu"),
-	pauseItem: document.getElementsByClassName("it"),
-	inventario: document.querySelector(".inventario"),
-	dialogBoxCanvas: document.querySelector(".dialogos"),
-	quickStating: function(){
-		if(!this.isQuickStatsHere){
-			this.HUD_HP.style.display = "flex";
-			this.isQuickStatsHere = true;
-		}
-		this.HP_bar.style.width = "" + this.covertToBar(personagemAtual.hp, personagemAtual.HP, 100) + "%";
+	loadDOM: document.querySelector(".container__saving"),
+	charDOM: document.querySelector(".charWin"),
+	charWin:{
+		barDOM: document.querySelector(".charWin__HPbar"),
+		charName: document.querySelector(".charName"),
+		moneyDOM: document.querySelector(".money")
 	},
-	covertToBar: function(amount, maximumAmount, barLength){
-		let regraDeQuatro = amount*barLength/maximumAmount;
-		return regraDeQuatro;
-	},
-	endQuickStarting: function(){
-		if(this.isQuickStatsHere){
-			this.HUD_HP.style.display = "none";
-			this.isQuickStatsHere = false;
+	characterQuickInfoDOM: {
+		hpDOM: document.querySelector(".HUD__lifeBar"),
+		update(entity){
+			this.hpDOM.style.width = ("" + transformIntoBar(entity.hp, entity.HP)) + "%";
 		}
 	},
-	pausing: function(){
-		if(!this.isPausing){
-			this.pause.style.display = "flex";
-			this.isPausing = true;
-		}
+	charWinUpdate: function(clock, entity){
+		this.charWin.moneyDOM.innerHTML = "$" + entity.money.unit + "." + ((entity.money.cents>= 10)? entity.money.cents : "0" + (entity.money.cents + ""));
+		this.characterQuickInfoDOM.update(entity);
 	},
-	endPausing: function(){
-		if(this.isPausing){
-			this.pause.style.display = "none";
-			this.isPausing = false;
-		}
+	characterMenuDOM: document.querySelector(".characterMenu"),
+	characterMenuItems:{
+		elements: document.querySelectorAll(".it"),
+		alt: document.querySelector(".characterMenu .description"),
+		optionList: ["items", "look at", "stats"],
+		selectedOption: 0,
+		optionLength: 2,
+		layer: 0
 	},
-	startInventario: function(entity_bag){
-		if(!this.isInventaring){
-			this.inventario.style.display = "flex";
-			let inventStr = "";
-			for(let i = 0; i < entity_bag.length; i++){
-				inventStr += '<div class = "inventItem">' + entity_bar[i] + '</div>';
+	characterMenuSubmenus: {
+		statsDOM: document.querySelector(".extraStats"),
+		itemsDOM: document.querySelector(".bags"),
+		isVisible: false,
+		inventoryEach: null,
+		selectedInventoryIndex: 0,
+		startitems(entity){
+			this.itemsDOM.style.display = "flex"
+			this.itemsDOM.innerHTML = "";
+			let finalString = "";
+			for(let i = 0; i < entity.tail.length; i++){
+				if(entity.tail[i] != undefined)
+					finalString += "<div class = 'bags__item'>" + entity.tail[i].name + "</div>";
+				else 
+					finalString += "<div class = 'bags__item'> -- </div>";
 			}
-			this.inventario.innerHTML = inventStr;
-			this.isInventaring = true;
+			if(entity.tail.length == 0){
+				this.itemsDOM.innerHTML = "empty inventory"
+				return;
+			}
+			this.itemsDOM.innerHTML = finalString;
+			this.inventoryEach = this.itemsDOM.querySelectorAll(".bags__item");
+			if(entity.tail.length > 0){
+				this.inventoryEach[this.selectedInventoryIndex].classList.add("selected");
+			}
+		},
+		updateItems(oldIndex){
+			if(this.inventoryEach != null){
+				this.inventoryEach[oldIndex].classList.remove("selected");
+				this.inventoryEach[this.selectedInventoryIndex].classList.add("selected");
+			}
+		},
+		dismissitems(){
+			this.itemsDOM.innerHTML = "";
+			this.itemsDOM.style.display = "none";
+		},
+		startstats(entity){
+			UI.scheduleStart();
+		},
+		"starttalk to": function(entity){
+			return;
+		},
+		"dismisstalk to": function(entity){
+			return;
+		},
+		"startlook at": function (entity){
+			return;
+		},
+		"dismisslook at": function(entity){
+			return;
+		},
+		dismissstats(entity){
+			UI.scheduleDismiss();
 		}
 	},
-	endInventario: function(){
-		if(this.isInventaring){
-			this.inventario.style.display = "none";
-			this.isInventaring = false;
-		}
-	},
-	
-	TelaTitulo: function(){
-		if(!this.isTitleHere){
-			this.titleDOM.style.display = "flex";
-			this.isTitleHere = true;
-		}
-	},
-	dismissTelaTitulo: function(){
-		if(this.isTitleHere){
-			this.titleDOM.style.display = "none";
-			this.isTitleHere = false;
-		}
-	},
-	startCharactering(){
-		if(!this.isCharSelectHere){
-			this.charsDOM.classList.add("flex-center");
-			this.charsDOM.classList.remove("notHere");
-			this.isCharSelectHere = true;
-		}
-	},
-	endCharactering(){
-		if(this.isCharSelectHere){
-			this.charsDOM.classList.remove("flex-center");
-			this.charsDOM.classList.add("notHere");
-			this.isCharSelectHere = false;
-		}
-	},
-	HUD: function(){
-		HUD_ctx.globalAlpha = 0.5;
-		HUD_ctx.fillRect(HUD_canvin.width - 120, 95, 110, 55);
-		HUD_ctx.globalAlpha = 1;
-		
-		HUD_canvin.style.visibility = "visible";
-		//HUD_ctx.drawImage(janelaDeStatus, 0, 0, 208, 100)
-		
-		//desenhar números
-		let hpPraRenderizar = this.convertToBar(personagemAtual.ser.hp, personagemAtual.ser.HP, this.lifeBar.borderW-(padding*2));
-		if(personagemAtual.ser.xp < 0){
-			personagemAtual.ser.xp = 0;
-		}else if(personagemAtual.ser.xp >= 1000000000){
-			personagemAtual.ser.xp = 999999999;
-		}
-		let pontosStr = personagemAtual.ser.xp + "";
-		escreva(pontosStr, HUD_canvin.width - 100, HUD_canvin.height - 115);
-	},
-	addDialogBox(){
-		
-	}
-}
+	pauseDOM: document.querySelector(".pause"),
+	jobTableDOM: document.querySelector(".schedule"),
+	dialogDOM: document.querySelector("#dialogs"),
+	dialogItems: {
+		stackPair: 0,
+		bufferAnimation: NaN,
+		object: null,
+		position: {x: undefined, y: undefined},
+		selectedOption: 0,
+		optionsDOM: [],
+		hasOption: false,
+		hasOptionsLoaded: false,
+		writeText(){
+			if(this.bufferAnimation < this.object.text.length){
+				this.bufferAnimation++;
+			}
+			let stringSplice = "<div class = 'whoTalks'>"+this.object.name+"</div><div class = 'speaking'>";
+			let heightSplice = 0;
+			for(let i = 0; i < this.bufferAnimation; i++){
+				stringSplice += this.object.text[i];
+			}
 
-//coordenadas de imagem para os numeros do HP
-
-function esconder_HUD(){
-	HUD_canvin.style.display = 'none';
-}
-
-var escala = 2;
-
-//parte das caixas de diálogo e menu de pausa
-
-
-const PauseMenu = {
-	camadas: 0,
-	raioDoMenu: 30,
-	numDeOpcoes: 4,
-	raioParaAnim: 0,
-	opcaoSelecionada: 0,
-	opcoes: ["falar", "items", "olhar", "status"],
-	
-	falar(){
-		UI.addDialogBox();
-	},
-	items(){
-		UI.startInventario(personagemAtual.calda);
-	},
-	status(){
-		UI.showStatus();
-	},
-	
-	avancarNaLayer(){
-		this[this.opcoes[this.opcaoSelecionada]]();
-	},
-	regredirNaLayer(){
-		if(this.camadas == -1){
-			this.camadas = 0;
-			gameFeature.pause = false;
+			
+			UI.dialogDOM.style.width = "90%";
+			heightSplice = Math.ceil(this.object.text.length/25) + 3;
+			UI.dialogDOM.style.bottom = "5%";
+			//transformIntoBar(Game.CurrentCharacter.centralPoint[1], Game.canvas.height) + "%";
+			UI.dialogDOM.style.left = "5%"
+			
+			UI.dialogDOM.innerHTML = stringSplice;
+			if(this.object.options && this.bufferAnimation >= this.object.text.length-1 && !this.hasOptionsLoaded){
+				this.hasOption = true;
+				for(let i = 0; i < this.object.options.length; i++){
+					this.optionsDOM.push(document.createElement("div"));
+					this.optionsDOM[i].textContent = this.object.options[i].text;
+					this.optionsDOM[i].setAttribute("class", "dialog-option");
+					if(i === 0){
+						this.optionsDOM[i].classList.add("selected");
+					}
+					UI.dialogDOM.insertBefore(this.optionsDOM[i], null);
+				}
+				this.hasOptionsLoaded = true;
+			}
+			if(this.object.options && this.bufferAnimation >= this.object.text.length-1){
+				for(let i = 0; i < this.object.options.length; i++){
+					heightSplice += Math.ceil(this.object.options[i].text.length/25)+1;
+					UI.dialogDOM.insertBefore(this.optionsDOM[i], null);
+				}
+			}
+			heightSplice += "em"
+			UI.dialogDOM.style.height = heightSplice;
 		}
+	},
+	charWindowDOM: document.querySelector(".charWin"),
+	title: {
+		selectedOption: 0,
+		options: ["newGame", "continueGame"],
+		optionDOM: [document.querySelector(".new"), document.querySelector(".continue")]
+	},
+	loadGame: {
+		selectedOption: 0,
+		option: ["cookie", "sendFile"],
+		optionDOM: [document.querySelector(".Cookies"), document.querySelector(".SendAFile")]
+	},
+	loadCookies:{
+		selectedOption: 0,
+		option: ["noFile"],
+		DOM: document.querySelector(".loadByCookie"),
+	},
+	cooking: {
+		selectedOption: 0,
+		currentLayer: 0,
+		option: [],
+		items: [],
+		DOM: document.querySelector(".cooking"),
+		toolsDOM: document.querySelector(".cooking__tools"),
+	},
+	loadCookiesStart(str){
+		let save = this.loadCookies.DOM.createElement("div");
+		save.innerHTML = str;
+	},
+	titleStart(){
+		this.titleDOM.style.display = "flex";
+	},
+	titleDismiss(){
+		this.titleDOM.style.display = "none";
+	},
+	loadStart(){
+		this.loadDOM.style.display = "flex";
+	},
+	loadDismiss(){
+		this.loadDOM.style.display = "none";
+	},
+	charWinStart(){
+		this.charDOM.style.display = "flex";
+	},
+	charWinDismiss(){
+		this.charDOM.style.display = "none";
+	},
+	dialogStart(){
+		this.dialogDOM.style.display = "block"
+		setTimeout(()=>{this.dialogDOM.style.transform = "scale(1)"}, 304)
+	},
+	dialogDismiss(){
+		this.dialogDOM.style.transform = "scale(0)"
+		setTimeout(()=>{
+			this.dialogDOM.style.display = "none";
+			this.dialogItems.optionsDOM = [];
+			this.dialogItems.hasOption = false;
+			this.dialogItems.hasOptionsLoaded = false;
+		}, 304)
+	},
+	characterMenuStart(){
+		this.characterMenuDOM.style.display = "flex";
+	},
+	characterMenuDismiss(){
+		this.characterMenuDOM.style.display = "none";
 	}
 }
